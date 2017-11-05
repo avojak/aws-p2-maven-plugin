@@ -12,9 +12,15 @@
     <url>https://github.com/avojak/aws-p2-maven-plugin</url>
 
     <properties>
+        <!-- Dependency versions -->
         <aws.sdk.version>1.11.172</aws.sdk.version>
         <maven.version>3.5.0</maven.version>
         <slf4j.version>1.7.25</slf4j.version>
+
+        <!-- Plugin versions -->
+        <jacoco.version>0.7.9</jacoco.version>
+        <coveralls.version>4.3.0</coveralls.version>
+
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -106,6 +112,58 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.0.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Sets the path to the file which contains the execution data. -->
+                            <dataFile>target/jacoco.exec</dataFile>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <systemPropertyVariables>
+                        <jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
+                    </systemPropertyVariables>
+                    <excludes>
+                        <!-- Exclude the HelpMojo -->
+                        <exclude>**/HelpMojo.*</exclude>
+                        <!-- Exclude factories not intended to be tested -->
+                        <exclude>**/S3BucketRepositoryFactory.*</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eluder.coveralls</groupId>
+                <artifactId>coveralls-maven-plugin</artifactId>
+                <version>${coveralls.version}</version>
+                <configuration>
+                    <jacocoReports>
+                        <jacocoReport>${project.build.directory}/site/jacoco/jacoco.xml</jacocoReport>
+                    </jacocoReports>
+                </configuration>
             </plugin>
         </plugins>
     </build>
