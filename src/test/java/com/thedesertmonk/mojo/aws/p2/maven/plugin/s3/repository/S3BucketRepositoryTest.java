@@ -467,7 +467,7 @@ public class S3BucketRepositoryTest {
 	 * Creates an inaccessible temporary file.
 	 */
 	private File createInaccessibleFile() throws IOException {
-		return createTemporaryFile(new HashSet<>(), null);
+		return createTemporaryFile(new HashSet<PosixFilePermission>(), null);
 	}
 
 	/**
@@ -502,7 +502,7 @@ public class S3BucketRepositoryTest {
 	 * Creates an inaccessible temporary directory.
 	 */
 	private File createInaccessibleDirectory() throws IOException {
-		return createTemporaryDirectory(new HashSet<>(), null);
+		return createTemporaryDirectory(new HashSet<PosixFilePermission>(), null);
 	}
 
 	/**

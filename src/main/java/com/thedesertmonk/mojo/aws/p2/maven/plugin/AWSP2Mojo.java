@@ -21,7 +21,7 @@ import java.io.File;
 import java.net.URL;
 
 /**
- * Implementation of {@link AbstractMojo} for the aws-p2-maven-plugin.
+ * Deploys a p2 update site to an AWS S3 bucket.
  *
  * @author Andrew Vojak
  */
