@@ -1,4 +1,4 @@
-# AWS P2 Maven Plugin (aws-p2-maven-plugin)
+# AWS p2 Maven Plugin (aws-p2-maven-plugin)
 
 [![Build Status](https://travis-ci.org/avojak/aws-p2-maven-plugin.svg?branch=master)](https://travis-ci.org/avojak/aws-p2-maven-plugin) 
 [![Coverage Status](https://coveralls.io/repos/github/avojak/aws-p2-maven-plugin/badge.svg?branch=initial-impl)](https://coveralls.io/github/avojak/aws-p2-maven-plugin?branch=initial-impl) 
@@ -67,6 +67,12 @@ The following parameters can be set in the configuration:
 | deploySnapshots | `boolean` | No | 1.0 | Whether or not to deploy snapshot versions.<br>**Default value is:** `true`<br>**User property is:** `aws-p2.deploySnapshots` |
 | skip | `boolean` | No | 1.0 | Set to `true` to skip plugin execution.<br>**Default value is:** `false`<br>**User property is:** `aws-p2.skip` |
 | targetSiteDirectory | `String` | No | 1.0 | The directory within the bucket to place the update site.<br>**Default value is:** `${project.name}/${project.version}`<br>**User property is:** `aws-p2.targetSiteDirectory` |
+
+### Authentication
+
+The AWS p2 Maven Plugin uses the Default Credential Provider Chain for authentication. See 
+[Working with AWS Credentials](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) for details 
+on all supported methods of providing credentials.
 
 ## Built With
 
