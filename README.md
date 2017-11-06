@@ -78,6 +78,8 @@ on all supported methods of providing credentials.
 
 * [Maven](https://maven.apache.org/) - Dependency Management
 * [AWS SDK for Java](https://aws.amazon.com/sdk-for-java/) - Used to interact with AWS S3 buckets
+* [Travis CI](https://travis-ci.org) - Continuous Integration and Deployment
+* [JaCoCo](http://www.eclemma.org/jacoco/) - Code Coverage
 
 ## Versioning
 
@@ -85,4 +87,4 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## License
 
-This project is licensed under the Apache License, Version 2.0 - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details
