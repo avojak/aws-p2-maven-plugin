@@ -31,7 +31,7 @@ Add the plugin to the `build` section of the `pom.xml`:
 
 ```xml
 <plugin>
-    <groupId>com.thedesertmonk.mojo</groupId>
+    <groupId>com.avojak.mojo</groupId>
     <artifactId>aws-p2-maven-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
     <configuration>
