@@ -46,6 +46,30 @@ Add the plugin to the `build` section of the `pom.xml`:
     </executions>
 </plugin>
 ```
+```xml
+<pluginRepository>
+    <id>avojak-release</id>
+    <name>avojak Release Repository</name>
+    <url>http://repo.avojak.com/maven-release</url>
+    <layout>default</layout>
+    <snapshots>
+        <enabled>false</enabled>
+    </snapshots>
+</pluginRepository>
+```
+
+Alternatively, you may use snapshot versions from the snapshot repository:
+```xml
+<pluginRepository>
+    <id>avojak-snapshot</id>
+    <name>avojak Snapshot Repository</name>
+    <url>http://repo.avojak.com/maven-snapshot</url>
+    <layout>default</layout>
+    <snapshots>
+        <enabled>true</enabled>
+    </snapshots>
+</pluginRepository>
+```
 
 ### Goals
 
