@@ -98,6 +98,15 @@ The AWS p2 Maven Plugin uses the Default Credential Provider Chain for authentic
 [Working with AWS Credentials](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) for details 
 on all supported methods of providing credentials.
 
+## S3 Bucket Configuration
+
+In order to host a static p2 update site on an S3 bucket, you will need to ensure several bucket settings:
+
+1. In the bucket properties tab, "Static website hosting" must be enabled
+2. In the bucket permissions tab, "Public access" to list bucket contents must be enabled
+
+It is up to the consumer to configure the AWS account used for deployments, although we recommend creating an account whose sole responsibility is deploying to this bucket. Only the minimum required permissions should be granted to this user.
+
 ## Built With
 
 * [Maven](https://maven.apache.org/) - Dependency Management
