@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>{{title}}</title>
+        <style>
+            footer {
+                font-size: small;
+            }
+            header {
+                background-color: #27AE60;
+            }
+            main {
+                margin-top: 50px;
+                margin-bottom: 50px;
+            }
+            #banner {
+                height: 90px;
+                line-height: 90px;
+                margin-left: 10px;
+                color: #FFF;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div id="banner">
+                <h1>{{banner}}</h1>
+            </div>
+        </header>
+        <main>
+            <p>{{message}}</p>
+        </main>
+        <hr>
+        <footer>
+            <p><i>Generated with <a href="https://github.com/avojak/aws-p2-maven-plugin">AWS p2 Maven Plugin</a> by <a href="https://avojak.com">avojak</a>. {{timestamp}}</i></p>
+        </footer>
+    </body>
+</html>
