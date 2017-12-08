@@ -38,12 +38,11 @@ public class S3BucketRepository {
 	 * @param putObjectRequestFactory    The {@link PutObjectRequestFactory} for {@link File files}. Cannot be {@code
 	 *                                   null}.
 	 * @param deleteObjectRequestFactory The {@link DeleteObjectRequestFactory}. Cannot be {@code null}.
-	 *
 	 * @throws BucketDoesNotExistException if the specified bucketName does not refer to an existing bucket.
 	 */
 	S3BucketRepository(final AmazonS3 client, final String bucketName,
-			final PutObjectRequestFactory putObjectRequestFactory,
-			final DeleteObjectRequestFactory deleteObjectRequestFactory) throws BucketDoesNotExistException {
+	                   final PutObjectRequestFactory putObjectRequestFactory,
+	                   final DeleteObjectRequestFactory deleteObjectRequestFactory) throws BucketDoesNotExistException {
 		this.client = checkNotNull(client, "client cannot be null");
 		this.bucketName = checkNotNull(bucketName, "bucketName cannot be null");
 		checkArgument(!bucketName.trim().isEmpty(), "bucketName cannot be empty");
@@ -72,13 +71,12 @@ public class S3BucketRepository {
 	 *
 	 * @param src  The source {@link File} to upload. Cannot be {@code null}.
 	 * @param dest The destination {@link BucketPath} location within the bucket. Cannot be {@code null}.
-	 *
 	 * @return The {@link URL} of the file which was uploaded, or {@code null} if no file was uploaded.
 	 */
 	public URL uploadFile(final File src, final BucketPath dest) {
 		checkNotNull(src, "src cannot be null");
 		checkNotNull(dest, "dest cannot be null");
-		if (!isAccessible(src) || !src.isFile()) {
+		if (!src.exists() || !src.isFile()) {
 			LOGGER.warn(ResourceUtil.getString(getClass(), "warn.fileNotAccessible"), src.getName());
 			return null;
 		}
@@ -113,13 +111,12 @@ public class S3BucketRepository {
 	 *
 	 * @param srcDir The source directory {@link File} to upload. Cannot be {@code null}.
 	 * @param dest   The destination {@link BucketPath} location within the bucket. Cannot be {@code null}.
-	 *
 	 * @return The {@link URL} of the directory which was uploaded, or {@code null} if no directory was uploaded.
 	 */
 	public URL uploadDirectory(final File srcDir, final BucketPath dest) {
 		checkNotNull(srcDir, "srcDir cannot be null");
 		checkNotNull(dest, "dest cannot be null");
-		if (!isAccessible(srcDir) || !srcDir.isDirectory()) {
+		if (!srcDir.exists() || !srcDir.isDirectory()) {
 			LOGGER.warn(ResourceUtil.getString(getClass(), "warn.directoryNotAccessible"), srcDir.getName());
 			return null;
 		}
@@ -143,10 +140,6 @@ public class S3BucketRepository {
 			}
 		}
 		return client.getUrl(bucketName, key);
-	}
-
-	private boolean isAccessible(final File file) {
-		return file.exists() && file.canRead();
 	}
 
 	// TODO: Explicitly declare the exceptions thrown by the AmazonS3 client?

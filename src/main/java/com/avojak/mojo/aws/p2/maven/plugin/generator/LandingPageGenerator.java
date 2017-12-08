@@ -1,68 +1,117 @@
-package com.avojak.mojo.aws.p2.maven.plugin.s3.generator;
+package com.avojak.mojo.aws.p2.maven.plugin.generator;
 
 import com.avojak.mojo.aws.p2.maven.plugin.resource.ResourceUtil;
-import com.google.common.collect.Sets;
 import com.google.common.escape.Escaper;
+import com.google.common.io.Resources;
+import org.apache.commons.codec.Charsets;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
+import java.text.DateFormat;
 import java.text.MessageFormat;
-import java.util.Set;
+import java.util.Date;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Class to generate HTML landing pages for a repository.
+ */
 public class LandingPageGenerator {
+
+	private static final String TITLE_PLACEHOLDER = "{{title}}";
+	private static final String BANNER_PLACEHOLDER = "{{banner}}";
+	private static final String MESSAGE_PLACEHOLDER = "{{message}}";
+	private static final String TIMESTAMP_PLACEHOLDER = "{{timestamp}}";
 
 	private final Escaper escaper;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param escaper The {@link Escaper}. Cannot be {@code null}.
+	 */
 	public LandingPageGenerator(final Escaper escaper) {
 		this.escaper = checkNotNull(escaper, "escaper cannot be null");
 	}
 
-	public File generate(final String projectName) throws IOException {
+	/**
+	 * Generates the landing page HTML file.
+	 *
+	 * @param projectName The project name. Cannot be null or empty.
+	 * @return The non-null landing page {@link File}.
+	 * @throws IOException if an {@link IOException} occurs.
+	 */
+	public File generate(final String projectName, final Date date) throws IOException {
 		checkNotNull(projectName, "projectName cannot be null");
 		checkArgument(!projectName.trim().isEmpty(), "projectName cannot be empty");
+		checkNotNull(date, "date cannot be null");
+
 		final String escapedProjectName = escaper.escape(projectName);
-		writeContentsToFile(createFile(), createFileContents(escapedProjectName));
+		final String template = readTemplateFileAsString();
+		final String fileContents = createFileContents(template, escapedProjectName, date);
 
-		return null;
+		return writeContentsToFile(createEmptyFile(), fileContents);
 	}
 
-	private File createFile() throws IOException {
-		final Set<PosixFilePermission> permissions = Sets.newHashSet(PosixFilePermission.OWNER_READ);
-		final FileAttribute attribute = PosixFilePermissions.asFileAttribute(permissions);
-		return Files.createTempFile("index", "html", attribute).toFile();
+	/**
+	 * Creates the empty landing page HTML file.
+	 *
+	 * @return The landing page {@link File}.
+	 * @throws IOException if an {@link IOException} occurs.
+	 */
+	private File createEmptyFile() throws IOException {
+		return Files.createTempFile("index", "html").toFile();
 	}
 
-	private String createFileContents(final String projectName) {
+	/**
+	 * Reads the HTML template file as a String.
+	 *
+	 * @return The HTML template file as a String.
+	 * @throws IOException if the template file cannot be found, or if an {@link IOException} occurs.
+	 */
+	private String readTemplateFileAsString() throws IOException {
+		final String templateFilename = ResourceUtil.getString(getClass(), "templateFile");
+		final String template = "html" + FileSystems.getDefault().getSeparator() + templateFilename;
+		return Resources.toString(Resources.getResource(template), Charsets.UTF_8);
+	}
+
+	/**
+	 * Creates the String content to be written to the file.
+	 *
+	 * @param template    The HTML template as a String.
+	 * @param projectName The project name.
+	 * @param date        The date of the build.
+	 * @return The HTML content as a String.
+	 */
+	private String createFileContents(final String template, final String projectName, final Date date) {
 		final String howToURL = ResourceUtil.getString(getClass(), "howToURL");
 		final String seeHow = ResourceUtil.getString(getClass(), "seeHow");
 		final String seeHowHTML = "<a href=" + howToURL + ">" + seeHow + "</a>";
 		final String landingPageFormat = ResourceUtil.getString(getClass(), "landingPageMessage");
 		final String message = MessageFormat.format(landingPageFormat, projectName, seeHowHTML);
-		return new StringBuilder("<!DOCTYPE html>\n")
-				.append("<html>\n")
-				.append("\t<head>\n")
-				.append("\t\t<meta charset=\"utf-8\">\n")
-				.append("\t\t<title>")
-				.append(projectName)
-				.append("</title>\n")
-				.append("\t</head>\n")
-				.append("\t<body>\n")
-				.append("\t\t<p>")
-				.append(message)
-				.append("</p>\n")
-				.append("\t</body>\n")
-				.append("</html>\n").toString();
+		final String bannerFormat = ResourceUtil.getString(getClass(), "bannerFormat");
+		final String banner = MessageFormat.format(bannerFormat, projectName);
+		final String timestamp = DateFormat.getDateTimeInstance().format(date);
+
+		return template.replace(TITLE_PLACEHOLDER, projectName)
+				.replace(BANNER_PLACEHOLDER, banner)
+				.replace(MESSAGE_PLACEHOLDER, message)
+				.replace(TIMESTAMP_PLACEHOLDER, timestamp);
 	}
 
-	private void writeContentsToFile(final File file, final String contents) throws IOException {
+	/**
+	 * Writes the String content to the {@link File}.
+	 *
+	 * @param file     The file to write content to.
+	 * @param contents The String contents.
+	 * @return The {@link File}.
+	 * @throws IOException if an {@link IOException} occurs.
+	 */
+	private File writeContentsToFile(final File file, final String contents) throws IOException {
 		FileWriter fileWriter = null;
 		try {
 			fileWriter = new FileWriter(file);
@@ -72,6 +121,7 @@ public class LandingPageGenerator {
 				fileWriter.close();
 			}
 		}
+		return file;
 	}
 
 }

@@ -2,7 +2,6 @@ package com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.put;
 
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.google.common.collect.Sets;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.ObjectRequestCreationException;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,10 +9,6 @@ import org.junit.Test;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
@@ -118,9 +113,7 @@ public class PutObjectRequestFactoryTest {
 	 * Creates a temporary file.
 	 */
 	private File createTemporaryFile() throws IOException {
-		final Set<PosixFilePermission> permissions = Sets.newHashSet(PosixFilePermission.OWNER_READ);
-		final FileAttribute attribute = PosixFilePermissions.asFileAttribute(permissions);
-		return Files.createTempFile("mock", null, attribute).toFile();
+		return Files.createTempFile("mock", null).toFile();
 	}
 
 }

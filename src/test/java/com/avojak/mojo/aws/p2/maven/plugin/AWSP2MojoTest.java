@@ -1,5 +1,6 @@
 package com.avojak.mojo.aws.p2.maven.plugin;
 
+import com.avojak.mojo.aws.p2.maven.plugin.generator.LandingPageGenerator;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepository;
@@ -17,8 +18,10 @@ import uk.org.lidalia.slf4jtest.TestLogger;
 import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
@@ -26,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -50,8 +54,12 @@ public class AWSP2MojoTest {
 	private S3BucketRepositoryFactory repositoryFactory;
 
 	@Mock
+	private LandingPageGenerator landingPageGenerator;
+
+	@Mock
 	private S3BucketRepository repository;
 
+	private String projectName;
 	private String outputDirectory;
 	private String bucketName;
 	private String targetSiteDirectory;
@@ -67,22 +75,24 @@ public class AWSP2MojoTest {
 	 */
 	@Before
 	public void setup() throws BucketDoesNotExistException {
-		final String projectName = "mock-project";
 		final String projectVersion = SNAPSHOT_VERSION;
+		projectName = "mock-project";
 		outputDirectory = "target";
 		bucketName = "mock";
 		targetSiteDirectory = projectName + "/" + projectVersion;
 
 		when(project.getVersion()).thenReturn(projectVersion);
+		when(project.getName()).thenReturn(projectName);
 		when(repositoryFactory.create(bucketName)).thenReturn(repository);
 
-		mojo = new AWSP2Mojo(repositoryFactory);
+		mojo = new AWSP2Mojo(repositoryFactory, landingPageGenerator);
 		mojo.setProject(project);
 		mojo.setBucket(bucketName);
 		mojo.setDeploySnapshots(true);
 		mojo.setTargetSiteDirectory(targetSiteDirectory);
 		mojo.setSkip(false);
 		mojo.setDedicatedBuckets(true);
+		mojo.setGenerateLandingPage(false);
 		mojo.setOutputDirectory(new File(outputDirectory));
 	}
 
@@ -216,6 +226,35 @@ public class AWSP2MojoTest {
 
 		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
 		verify(repository).uploadDirectory(expectedRepositoryDirectory, expectedDestination);
+	}
+
+	@Test
+	public void testExecute_DoNotGenerateLandingPage()
+			throws MojoFailureException, MojoExecutionException, IOException {
+		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
+		final BucketPath expectedDestination = new BucketPath().append(targetSiteDirectory);
+		final URL expectedUrl = new URL("http", "example", "mock");
+		when(repository.uploadDirectory(expectedRepositoryDirectory, expectedDestination)).thenReturn(expectedUrl);
+
+		mojo.execute();
+
+		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
+		verify(landingPageGenerator, never()).generate(eq(projectName), any(Date.class));
+	}
+
+	@Test
+	public void testExecute_GenerateLandingPage()
+			throws MojoFailureException, MojoExecutionException, IOException {
+		mojo.setGenerateLandingPage(true);
+		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
+		final BucketPath expectedDestination = new BucketPath().append(targetSiteDirectory);
+		final URL expectedUrl = new URL("http", "example", "mock");
+		when(repository.uploadDirectory(expectedRepositoryDirectory, expectedDestination)).thenReturn(expectedUrl);
+
+		mojo.execute();
+
+		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
+		verify(landingPageGenerator).generate(eq(projectName), any(Date.class));
 	}
 
 }

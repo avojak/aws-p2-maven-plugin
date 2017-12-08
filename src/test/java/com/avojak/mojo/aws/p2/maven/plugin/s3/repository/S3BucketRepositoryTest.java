@@ -3,12 +3,12 @@ package com.avojak.mojo.aws.p2.maven.plugin.s3.repository;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.google.common.collect.Sets;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.ObjectRequestCreationException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.delete.DeleteObjectRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.put.PutObjectRequestFactory;
+import com.avojak.mojo.aws.p2.maven.plugin.util.FileSystemTestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,13 +24,6 @@ import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
-import java.util.HashSet;
-import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -170,7 +163,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testUploadFile_NullDestination() throws IOException {
-		repository.uploadFile(createAccessibleFile(), null);
+		repository.uploadFile(FileSystemTestUtil.createAccessibleFile(), null);
 	}
 
 	/**
@@ -180,7 +173,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadFile_FileNotAccessible() throws IOException {
-		final File file = createInaccessibleFile();
+		final File file = FileSystemTestUtil.createInaccessibleFile();
 		final URL url = repository.uploadFile(file, new BucketPath());
 
 		assertNull(url);
@@ -196,7 +189,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadFile_FileNotAFile() throws IOException {
-		final File file = createAccessibleDirectory();
+		final File file = FileSystemTestUtil.createAccessibleDirectory();
 		final URL url = repository.uploadFile(file, new BucketPath());
 
 		assertNull(url);
@@ -213,7 +206,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadFile_UploadRequestCreationFailed() throws IOException, ObjectRequestCreationException {
-		final File file = createAccessibleFile();
+		final File file = FileSystemTestUtil.createAccessibleFile();
 		final BucketPath destination = new BucketPath().append("repository");
 		final Throwable throwable = new ObjectRequestCreationException();
 		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(false);
@@ -240,7 +233,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadFile_DeleteExistingFile() throws IOException, ObjectRequestCreationException {
-		final File file = createAccessibleFile();
+		final File file = FileSystemTestUtil.createAccessibleFile();
 		final BucketPath destination = new BucketPath().append("repository");
 		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(true);
 		when(deleteObjectRequestFactory.create(destination.asString())).thenReturn(deleteObjectRequest);
@@ -269,7 +262,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadFile() throws IOException, ObjectRequestCreationException {
-		final File file = createAccessibleFile();
+		final File file = FileSystemTestUtil.createAccessibleFile();
 		final BucketPath destination = new BucketPath().append("repository");
 		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(false);
 		when(putObjectRequestFactory.create(file, destination.asString())).thenReturn(putObjectRequest);
@@ -300,7 +293,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testUploadDirectory_NullDestination() throws IOException {
-		repository.uploadDirectory(createAccessibleDirectory(), null);
+		repository.uploadDirectory(FileSystemTestUtil.createAccessibleDirectory(), null);
 	}
 
 	/**
@@ -310,7 +303,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadDirectory_DirectoryNotAccessible() throws IOException {
-		final File directory = createInaccessibleDirectory();
+		final File directory = FileSystemTestUtil.createInaccessibleDirectory();
 		final URL url = repository.uploadDirectory(directory, new BucketPath());
 
 		assertNull(url);
@@ -327,7 +320,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadDirectory_DirectoryNotADirectory() throws IOException {
-		final File directory = createAccessibleFile();
+		final File directory = FileSystemTestUtil.createAccessibleFile();
 		final URL url = repository.uploadDirectory(directory, new BucketPath());
 
 		assertNull(url);
@@ -345,7 +338,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadDirectory_DeleteExistingDirectory() throws IOException, ObjectRequestCreationException {
-		final File directory = createAccessibleDirectory();
+		final File directory = FileSystemTestUtil.createAccessibleDirectory();
 
 		final BucketPath destination = new BucketPath().append("repository");
 		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(true);
@@ -373,7 +366,7 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadDirectory_EmptyDirectory() throws IOException, ObjectRequestCreationException {
-		final File directory = createAccessibleDirectory();
+		final File directory = FileSystemTestUtil.createAccessibleDirectory();
 		final BucketPath destination = new BucketPath().append("repository");
 		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(false);
 
@@ -397,8 +390,8 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadDirectory_ChildDirectory() throws IOException, ObjectRequestCreationException {
-		final File parentDirectory = createAccessibleDirectory();
-		final File childDirectory = createAccessibleDirectory(parentDirectory.toPath());
+		final File parentDirectory = FileSystemTestUtil.createAccessibleDirectory();
+		final File childDirectory = FileSystemTestUtil.createAccessibleDirectory(parentDirectory.toPath());
 
 		final BucketPath parentDirectoryDestination = new BucketPath().append("repository");
 		final BucketPath childDirectoryDestination = new BucketPath(parentDirectoryDestination)
@@ -426,8 +419,8 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test
 	public void testUploadDirectory_ChildFile() throws IOException, ObjectRequestCreationException {
-		final File directory = createAccessibleDirectory();
-		final File file = createAccessibleFile(directory.toPath());
+		final File directory = FileSystemTestUtil.createAccessibleDirectory();
+		final File file = FileSystemTestUtil.createAccessibleFile(directory.toPath());
 
 		final BucketPath directoryDestination = new BucketPath().append("repository");
 		final BucketPath fileDestination = new BucketPath(directoryDestination).append(file.getName());
@@ -447,74 +440,6 @@ public class S3BucketRepositoryTest {
 		verify(client).getUrl(bucketName, directoryDestination.asString());
 		verify(client).getUrl(bucketName, fileDestination.asString());
 		verifyNoMoreInteractions(client);
-	}
-
-	/**
-	 * Creates an accessible temporary file.
-	 */
-	private File createAccessibleFile() throws IOException {
-		return createAccessibleFile(null);
-	}
-
-	/**
-	 * Creates an accessible temporary file in the given directory.
-	 */
-	private File createAccessibleFile(final Path directory) throws IOException {
-		return createTemporaryFile(Sets.newHashSet(PosixFilePermission.OWNER_READ), directory);
-	}
-
-	/**
-	 * Creates an inaccessible temporary file.
-	 */
-	private File createInaccessibleFile() throws IOException {
-		return createTemporaryFile(new HashSet<PosixFilePermission>(), null);
-	}
-
-	/**
-	 * Creates a temporary file with the given permissions.
-	 */
-	private File createTemporaryFile(final Set<PosixFilePermission> permissions, final Path directory)
-			throws IOException {
-		final FileAttribute attribute = PosixFilePermissions.asFileAttribute(permissions);
-		if (directory != null) {
-			return Files.createTempFile(directory, "mock", null, attribute).toFile();
-		}
-		return Files.createTempFile("mock", null, attribute).toFile();
-	}
-
-	/**
-	 * Creates an accessible temporary directory.
-	 */
-	private File createAccessibleDirectory() throws IOException {
-		return createAccessibleDirectory(null);
-	}
-
-	/**
-	 * Creates an accessible temporary directory in the given directory.
-	 */
-	private File createAccessibleDirectory(final Path directory) throws IOException {
-		return createTemporaryDirectory(Sets.newHashSet(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE,
-				PosixFilePermission.OWNER_EXECUTE, PosixFilePermission.GROUP_READ, PosixFilePermission.GROUP_EXECUTE),
-				directory);
-	}
-
-	/**
-	 * Creates an inaccessible temporary directory.
-	 */
-	private File createInaccessibleDirectory() throws IOException {
-		return createTemporaryDirectory(new HashSet<PosixFilePermission>(), null);
-	}
-
-	/**
-	 * Creates a temporary directory with the given permissions.
-	 */
-	private File createTemporaryDirectory(final Set<PosixFilePermission> permissions, final Path directory)
-			throws IOException {
-		final FileAttribute attribute = PosixFilePermissions.asFileAttribute(permissions);
-		if (directory != null) {
-			return Files.createTempDirectory(directory, "mock", attribute).toFile();
-		}
-		return Files.createTempDirectory("mock", attribute).toFile();
 	}
 
 }
