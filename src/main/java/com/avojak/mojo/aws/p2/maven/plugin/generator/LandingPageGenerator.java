@@ -41,18 +41,22 @@ public class LandingPageGenerator {
 	/**
 	 * Generates the landing page HTML file.
 	 *
+	 * @param bucket      The bucket name. Cannot be null or empty.
 	 * @param projectName The project name. Cannot be null or empty.
 	 * @return The non-null landing page {@link File}.
 	 * @throws IOException if an {@link IOException} occurs.
 	 */
-	public File generate(final String projectName, final Date date) throws IOException {
+	public File generate(final String bucket, final String projectName, final Date date) throws IOException {
+		checkNotNull(bucket, "bucket cannot be null");
+		checkArgument(!bucket.trim().isEmpty(), "bucket cannot be empty");
 		checkNotNull(projectName, "projectName cannot be null");
 		checkArgument(!projectName.trim().isEmpty(), "projectName cannot be empty");
 		checkNotNull(date, "date cannot be null");
 
+		final String escapedBucketName = escaper.escape(bucket);
 		final String escapedProjectName = escaper.escape(projectName);
 		final String template = readTemplateFileAsString();
-		final String fileContents = createFileContents(template, escapedProjectName, date);
+		final String fileContents = createFileContents(template, escapedBucketName, escapedProjectName, date);
 
 		return writeContentsToFile(createEmptyFile(), fileContents);
 	}
@@ -83,21 +87,22 @@ public class LandingPageGenerator {
 	 * Creates the String content to be written to the file.
 	 *
 	 * @param template    The HTML template as a String.
+	 * @param bucketName  The bucket name.
 	 * @param projectName The project name.
 	 * @param date        The date of the build.
 	 * @return The HTML content as a String.
 	 */
-	private String createFileContents(final String template, final String projectName, final Date date) {
+	private String createFileContents(final String template, final String bucketName, final String projectName, final Date date) {
 		final String howToURL = ResourceUtil.getString(getClass(), "howToURL");
 		final String seeHow = ResourceUtil.getString(getClass(), "seeHow");
 		final String seeHowHTML = "<a href=" + howToURL + ">" + seeHow + "</a>";
 		final String landingPageFormat = ResourceUtil.getString(getClass(), "landingPageMessage");
 		final String message = MessageFormat.format(landingPageFormat, projectName, seeHowHTML);
 		final String bannerFormat = ResourceUtil.getString(getClass(), "bannerFormat");
-		final String banner = MessageFormat.format(bannerFormat, projectName);
+		final String banner = MessageFormat.format(bannerFormat, bucketName);
 		final String timestamp = DateFormat.getDateTimeInstance().format(date);
 
-		return template.replace(TITLE_PLACEHOLDER, projectName)
+		return template.replace(TITLE_PLACEHOLDER, bucketName)
 				.replace(BANNER_PLACEHOLDER, banner)
 				.replace(MESSAGE_PLACEHOLDER, message)
 				.replace(TIMESTAMP_PLACEHOLDER, timestamp);

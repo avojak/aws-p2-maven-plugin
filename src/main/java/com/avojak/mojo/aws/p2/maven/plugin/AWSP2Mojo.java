@@ -176,7 +176,7 @@ public class AWSP2Mojo extends AbstractMojo {
 		// Generate an HTML landing page if specified
 		if (generateLandingPage) {
 			try {
-				repository.uploadFile(landingPageGenerator.generate(project.getName(), new Date()), destination);
+				repository.uploadFile(landingPageGenerator.generate(bucket, project.getName(), new Date()), destination);
 			} catch (IOException e) {
 				throw new MojoFailureException("Unable to generate landing page", e);
 			}

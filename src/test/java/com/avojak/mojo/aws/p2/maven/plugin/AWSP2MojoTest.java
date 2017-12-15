@@ -160,7 +160,7 @@ public class AWSP2MojoTest {
 	}
 
 	/**
-	 * Tests that {@link AWSP2Mojo#execute()} when not using dedicated buckets, and the current version is a snapshot
+	 * Tests {@link AWSP2Mojo#execute()} when not using dedicated buckets, and the current version is a snapshot
 	 * version.
 	 *
 	 * @throws MojoFailureException   Unexpected.
@@ -184,7 +184,7 @@ public class AWSP2MojoTest {
 	}
 
 	/**
-	 * Tests that {@link AWSP2Mojo#execute()} when not using dedicated buckets, and the current version is a release
+	 * Tests {@link AWSP2Mojo#execute()} when not using dedicated buckets, and the current version is a release
 	 * version.
 	 *
 	 * @throws MojoFailureException   Unexpected.
@@ -208,7 +208,7 @@ public class AWSP2MojoTest {
 	}
 
 	/**
-	 * Tests that {@link AWSP2Mojo#execute()} on a snapshot deployment with dedicated buckets.
+	 * Tests {@link AWSP2Mojo#execute()} on a snapshot deployment with dedicated buckets.
 	 *
 	 * @throws MojoFailureException   Unexpected.
 	 * @throws MojoExecutionException Unexpected.
@@ -228,6 +228,14 @@ public class AWSP2MojoTest {
 		verify(repository).uploadDirectory(expectedRepositoryDirectory, expectedDestination);
 	}
 
+	/**
+	 * Tests that {@link AWSP2Mojo#execute()} does not generate a landing page when the landing page flag is set to
+	 * {@code false}.
+	 *
+	 * @throws MojoFailureException   Unexpected.
+	 * @throws MojoExecutionException Unexpected.
+	 * @throws IOException            Unexpected.
+	 */
 	@Test
 	public void testExecute_DoNotGenerateLandingPage()
 			throws MojoFailureException, MojoExecutionException, IOException {
@@ -239,9 +247,17 @@ public class AWSP2MojoTest {
 		mojo.execute();
 
 		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
-		verify(landingPageGenerator, never()).generate(eq(projectName), any(Date.class));
+		verify(landingPageGenerator, never()).generate(eq(bucketName), eq(projectName), any(Date.class));
 	}
 
+	/**
+	 * Tests that {@link AWSP2Mojo#execute()} generates a landing page when the landing page flag is set to {@code
+	 * true}.
+	 *
+	 * @throws MojoFailureException   Unexpected.
+	 * @throws MojoExecutionException Unexpected.
+	 * @throws IOException            Unexpected.
+	 */
 	@Test
 	public void testExecute_GenerateLandingPage()
 			throws MojoFailureException, MojoExecutionException, IOException {
@@ -254,7 +270,7 @@ public class AWSP2MojoTest {
 		mojo.execute();
 
 		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
-		verify(landingPageGenerator).generate(eq(projectName), any(Date.class));
+		verify(landingPageGenerator).generate(eq(bucketName), eq(projectName), any(Date.class));
 	}
 
 }
