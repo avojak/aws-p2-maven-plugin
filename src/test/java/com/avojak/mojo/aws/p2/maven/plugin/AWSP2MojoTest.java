@@ -59,7 +59,7 @@ public class AWSP2MojoTest {
 	@Mock
 	private S3BucketRepository repository;
 
-	private String projectName;
+	private String artifactId;
 	private String outputDirectory;
 	private String bucketName;
 	private String targetSiteDirectory;
@@ -76,13 +76,13 @@ public class AWSP2MojoTest {
 	@Before
 	public void setup() throws BucketDoesNotExistException {
 		final String projectVersion = SNAPSHOT_VERSION;
-		projectName = "mock-project";
+		artifactId = "mock-project";
 		outputDirectory = "target";
 		bucketName = "mock";
-		targetSiteDirectory = projectName + "/" + projectVersion;
+		targetSiteDirectory = artifactId + "/" + projectVersion;
 
 		when(project.getVersion()).thenReturn(projectVersion);
-		when(project.getName()).thenReturn(projectName);
+		when(project.getArtifactId()).thenReturn(artifactId);
 		when(repositoryFactory.create(bucketName)).thenReturn(repository);
 
 		mojo = new AWSP2Mojo(repositoryFactory, landingPageGenerator);
@@ -247,7 +247,7 @@ public class AWSP2MojoTest {
 		mojo.execute();
 
 		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
-		verify(landingPageGenerator, never()).generate(eq(bucketName), eq(projectName), any(Date.class));
+		verify(landingPageGenerator, never()).generate(eq(bucketName), eq(artifactId), any(Date.class));
 	}
 
 	/**
@@ -270,7 +270,7 @@ public class AWSP2MojoTest {
 		mojo.execute();
 
 		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
-		verify(landingPageGenerator).generate(eq(bucketName), eq(projectName), any(Date.class));
+		verify(landingPageGenerator).generate(eq(bucketName), eq(artifactId), any(Date.class));
 	}
 
 }

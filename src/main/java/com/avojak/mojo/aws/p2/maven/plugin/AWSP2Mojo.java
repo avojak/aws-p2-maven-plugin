@@ -53,10 +53,10 @@ public class AWSP2Mojo extends AbstractMojo {
 	/**
 	 * The directory within the bucket where the site will be placed. The default location is:
 	 * <pre>
-	 *     ${project.name}/${project.version}
+	 *     ${project.artifactId}/${project.version}
 	 * </pre>
 	 */
-	@Parameter(name = "targetSiteDirectory", property = "aws-p2.targetSiteDirectory", defaultValue = "${project.name}/${project.version}")
+	@Parameter(name = "targetSiteDirectory", property = "aws-p2.targetSiteDirectory", defaultValue = "${project.artifactId}/${project.version}")
 	private String targetSiteDirectory;
 
 	/**
@@ -173,16 +173,19 @@ public class AWSP2Mojo extends AbstractMojo {
 
 		destination.append(targetSiteDirectory);
 
+		final URL url = repository.uploadDirectory(repositoryDirectory, destination);
+
 		// Generate an HTML landing page if specified
 		if (generateLandingPage) {
 			try {
-				repository.uploadFile(landingPageGenerator.generate(bucket, project.getName(), new Date()), destination);
+				final BucketPath landingPageDestination = new BucketPath(destination).append("index.html");
+				repository.uploadFile(landingPageGenerator.generate(bucket, project.getArtifactId(), new Date()),
+						landingPageDestination);
 			} catch (IOException e) {
 				throw new MojoFailureException("Unable to generate landing page", e);
 			}
 		}
 
-		final URL url = repository.uploadDirectory(repositoryDirectory, destination);
 		if (url != null) {
 			LOGGER.info(ResourceUtil.getString(getClass(), "info.uploadComplete"), url.toString());
 		}

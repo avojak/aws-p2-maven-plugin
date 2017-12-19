@@ -8,7 +8,6 @@ import org.apache.commons.codec.Charsets;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.text.DateFormat;
 import java.text.MessageFormat;
@@ -43,7 +42,9 @@ public class LandingPageGenerator {
 	 *
 	 * @param bucket      The bucket name. Cannot be null or empty.
 	 * @param projectName The project name. Cannot be null or empty.
+	 *
 	 * @return The non-null landing page {@link File}.
+	 *
 	 * @throws IOException if an {@link IOException} occurs.
 	 */
 	public File generate(final String bucket, final String projectName, final Date date) throws IOException {
@@ -65,21 +66,23 @@ public class LandingPageGenerator {
 	 * Creates the empty landing page HTML file.
 	 *
 	 * @return The landing page {@link File}.
+	 *
 	 * @throws IOException if an {@link IOException} occurs.
 	 */
 	private File createEmptyFile() throws IOException {
-		return Files.createTempFile("index", "html").toFile();
+		return Files.createTempFile("index", ".html").toFile();
 	}
 
 	/**
 	 * Reads the HTML template file as a String.
 	 *
 	 * @return The HTML template file as a String.
+	 *
 	 * @throws IOException if the template file cannot be found, or if an {@link IOException} occurs.
 	 */
 	private String readTemplateFileAsString() throws IOException {
 		final String templateFilename = ResourceUtil.getString(getClass(), "templateFile");
-		final String template = "html" + FileSystems.getDefault().getSeparator() + templateFilename;
+		final String template = "html/" + templateFilename;
 		return Resources.toString(Resources.getResource(template), Charsets.UTF_8);
 	}
 
@@ -90,6 +93,7 @@ public class LandingPageGenerator {
 	 * @param bucketName  The bucket name.
 	 * @param projectName The project name.
 	 * @param date        The date of the build.
+	 *
 	 * @return The HTML content as a String.
 	 */
 	private String createFileContents(final String template, final String bucketName, final String projectName, final Date date) {
@@ -113,7 +117,9 @@ public class LandingPageGenerator {
 	 *
 	 * @param file     The file to write content to.
 	 * @param contents The String contents.
+	 *
 	 * @return The {@link File}.
+	 *
 	 * @throws IOException if an {@link IOException} occurs.
 	 */
 	private File writeContentsToFile(final File file, final String contents) throws IOException {
