@@ -21,6 +21,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class LandingPageGenerator {
 
+	// TODO: Update to leverage this Fiddle: https://jsfiddle.net/h2rfjjje/
+
 	private static final String TITLE_PLACEHOLDER = "{{title}}";
 	private static final String BANNER_PLACEHOLDER = "{{banner}}";
 	private static final String MESSAGE_PLACEHOLDER = "{{message}}";
