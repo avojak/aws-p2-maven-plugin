@@ -165,6 +165,8 @@
                         <exclude>**/HelpMojo.*</exclude>
                         <!-- Exclude factories not intended to be tested -->
                         <exclude>**/S3BucketRepositoryFactory.*</exclude>
+                        <!-- Exclude interfaces -->
+                        <exclude>**/S3BucketRepository.*</exclude>
                     </excludes>
                 </configuration>
             </plugin>

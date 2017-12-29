@@ -3,9 +3,8 @@ package com.avojak.mojo.aws.p2.maven.plugin;
 import com.avojak.mojo.aws.p2.maven.plugin.generator.LandingPageGenerator;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepository;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepositoryFactory;
-import org.apache.maven.plugin.MojoExecutionException;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.impl.S3BucketRepositoryImpl;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.junit.After;
@@ -57,7 +56,7 @@ public class AWSP2MojoTest {
 	private LandingPageGenerator landingPageGenerator;
 
 	@Mock
-	private S3BucketRepository repository;
+	private S3BucketRepositoryImpl repository;
 
 	private String artifactId;
 	private String outputDirectory;
@@ -108,12 +107,11 @@ public class AWSP2MojoTest {
 	 * Tests that {@link AWSP2Mojo#execute()} skips execution when the skip property is set to {@code true}.
 	 *
 	 * @throws MojoFailureException        Unexpected.
-	 * @throws MojoExecutionException      Unexpected.
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test
 	public void testExecute_SkipExecution()
-			throws MojoFailureException, MojoExecutionException, BucketDoesNotExistException {
+			throws MojoFailureException, BucketDoesNotExistException {
 		mojo.setSkip(true);
 		mojo.execute();
 
@@ -126,12 +124,11 @@ public class AWSP2MojoTest {
 	 * the current project version is a snapshot version.
 	 *
 	 * @throws MojoFailureException        Unexpected.
-	 * @throws MojoExecutionException      Unexpected.
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test
 	public void testExecute_SkipSnapshot()
-			throws MojoFailureException, MojoExecutionException, BucketDoesNotExistException {
+			throws MojoFailureException, BucketDoesNotExistException {
 		mojo.setDeploySnapshots(false);
 		mojo.execute();
 
@@ -142,13 +139,11 @@ public class AWSP2MojoTest {
 	/**
 	 * Tests that {@link AWSP2Mojo#execute()} throws an exception when the specified bucket does not exist.
 	 *
-	 * @throws MojoFailureException        Expected.
-	 * @throws MojoExecutionException      Unexpected.
 	 * @throws BucketDoesNotExistException Expected to be caught and wrapped by {@link MojoFailureException}.
 	 */
 	@Test
 	public void testExecute_BucketDoesNotExist()
-			throws BucketDoesNotExistException, MojoFailureException, MojoExecutionException {
+			throws BucketDoesNotExistException {
 		when(repositoryFactory.create(bucketName)).thenThrow(BucketDoesNotExistException.class);
 
 		try {
@@ -163,23 +158,24 @@ public class AWSP2MojoTest {
 	 * Tests {@link AWSP2Mojo#execute()} when not using dedicated buckets, and the current version is a snapshot
 	 * version.
 	 *
-	 * @throws MojoFailureException   Unexpected.
-	 * @throws MojoExecutionException Unexpected.
-	 * @throws MalformedURLException  Unexpected.
+	 * @throws MojoFailureException  Unexpected.
+	 * @throws MalformedURLException Unexpected.
 	 */
 	@Test
 	public void testExecute_NotUsingDedicatedBucket_SnapshotDeployment()
-			throws MojoFailureException, MojoExecutionException, MalformedURLException {
+			throws MojoFailureException, MalformedURLException {
 		when(project.getVersion()).thenReturn(SNAPSHOT_VERSION);
 		mojo.setDedicatedBuckets(false);
 		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
 		final BucketPath expectedDestination = new BucketPath().append(SNAPSHOT_DIR).append(targetSiteDirectory);
-		final URL expectedUrl = new URL("http", "example", "mock");
+		final URL expectedUrl = new URL("http", "example.com", "mock");
 		when(repository.uploadDirectory(expectedRepositoryDirectory, expectedDestination)).thenReturn(expectedUrl);
+		when(repository.getHostingUrl(expectedDestination.asString())).thenReturn(expectedUrl.toString());
 
 		mojo.execute();
 
 		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
+		verify(repository).deleteDirectory(expectedDestination.asString());
 		verify(repository).uploadDirectory(expectedRepositoryDirectory, expectedDestination);
 	}
 
@@ -187,44 +183,46 @@ public class AWSP2MojoTest {
 	 * Tests {@link AWSP2Mojo#execute()} when not using dedicated buckets, and the current version is a release
 	 * version.
 	 *
-	 * @throws MojoFailureException   Unexpected.
-	 * @throws MojoExecutionException Unexpected.
-	 * @throws MalformedURLException  Unexpected.
+	 * @throws MojoFailureException  Unexpected.
+	 * @throws MalformedURLException Unexpected.
 	 */
 	@Test
 	public void testExecute_NotUsingDedicatedBucket_ReleaseDeployment()
-			throws MojoFailureException, MojoExecutionException, MalformedURLException {
+			throws MojoFailureException, MalformedURLException {
 		when(project.getVersion()).thenReturn(RELEASE_VERSION);
 		mojo.setDedicatedBuckets(false);
 		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
 		final BucketPath expectedDestination = new BucketPath().append(RELEASE_DIR).append(targetSiteDirectory);
-		final URL expectedUrl = new URL("http", "example", "mock");
+		final URL expectedUrl = new URL("http", "example.com", "mock");
 		when(repository.uploadDirectory(expectedRepositoryDirectory, expectedDestination)).thenReturn(expectedUrl);
+		when(repository.getHostingUrl(expectedDestination.asString())).thenReturn(expectedUrl.toString());
 
 		mojo.execute();
 
 		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
+		verify(repository).deleteDirectory(expectedDestination.asString());
 		verify(repository).uploadDirectory(expectedRepositoryDirectory, expectedDestination);
 	}
 
 	/**
 	 * Tests {@link AWSP2Mojo#execute()} on a snapshot deployment with dedicated buckets.
 	 *
-	 * @throws MojoFailureException   Unexpected.
-	 * @throws MojoExecutionException Unexpected.
-	 * @throws MalformedURLException  Unexpected.
+	 * @throws MojoFailureException  Unexpected.
+	 * @throws MalformedURLException Unexpected.
 	 */
 	@Test
 	public void testExecute_DedicatedBucket()
-			throws MojoFailureException, MojoExecutionException, MalformedURLException {
+			throws MojoFailureException, MalformedURLException {
 		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
 		final BucketPath expectedDestination = new BucketPath().append(targetSiteDirectory);
-		final URL expectedUrl = new URL("http", "example", "mock");
+		final URL expectedUrl = new URL("http", "example.com", "mock");
 		when(repository.uploadDirectory(expectedRepositoryDirectory, expectedDestination)).thenReturn(expectedUrl);
+		when(repository.getHostingUrl(expectedDestination.asString())).thenReturn(expectedUrl.toString());
 
 		mojo.execute();
 
 		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
+		verify(repository).deleteDirectory(expectedDestination.asString());
 		verify(repository).uploadDirectory(expectedRepositoryDirectory, expectedDestination);
 	}
 
@@ -232,17 +230,17 @@ public class AWSP2MojoTest {
 	 * Tests that {@link AWSP2Mojo#execute()} does not generate a landing page when the landing page flag is set to
 	 * {@code false}.
 	 *
-	 * @throws MojoFailureException   Unexpected.
-	 * @throws MojoExecutionException Unexpected.
-	 * @throws IOException            Unexpected.
+	 * @throws MojoFailureException Unexpected.
+	 * @throws IOException          Unexpected.
 	 */
 	@Test
 	public void testExecute_DoNotGenerateLandingPage()
-			throws MojoFailureException, MojoExecutionException, IOException {
+			throws MojoFailureException, IOException {
 		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
 		final BucketPath expectedDestination = new BucketPath().append(targetSiteDirectory);
-		final URL expectedUrl = new URL("http", "example", "mock");
+		final URL expectedUrl = new URL("http", "example.com", "mock");
 		when(repository.uploadDirectory(expectedRepositoryDirectory, expectedDestination)).thenReturn(expectedUrl);
+		when(repository.getHostingUrl(expectedDestination.asString())).thenReturn(expectedUrl.toString());
 
 		mojo.execute();
 
@@ -254,18 +252,18 @@ public class AWSP2MojoTest {
 	 * Tests that {@link AWSP2Mojo#execute()} generates a landing page when the landing page flag is set to {@code
 	 * true}.
 	 *
-	 * @throws MojoFailureException   Unexpected.
-	 * @throws MojoExecutionException Unexpected.
-	 * @throws IOException            Unexpected.
+	 * @throws MojoFailureException Unexpected.
+	 * @throws IOException          Unexpected.
 	 */
 	@Test
 	public void testExecute_GenerateLandingPage()
-			throws MojoFailureException, MojoExecutionException, IOException {
+			throws MojoFailureException, IOException {
 		mojo.setGenerateLandingPage(true);
 		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
 		final BucketPath expectedDestination = new BucketPath().append(targetSiteDirectory);
-		final URL expectedUrl = new URL("http", "example", "mock");
+		final URL expectedUrl = new URL("http", "example.com", "mock");
 		when(repository.uploadDirectory(expectedRepositoryDirectory, expectedDestination)).thenReturn(expectedUrl);
+		when(repository.getHostingUrl(expectedDestination.asString())).thenReturn(expectedUrl.toString());
 
 		mojo.execute();
 

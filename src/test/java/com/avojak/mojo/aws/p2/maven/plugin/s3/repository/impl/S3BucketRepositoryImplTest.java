@@ -1,21 +1,27 @@
-package com.avojak.mojo.aws.p2.maven.plugin.s3.repository;
+package com.avojak.mojo.aws.p2.maven.plugin.s3.repository.impl;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import com.amazonaws.services.s3.model.HeadBucketRequest;
+import com.amazonaws.services.s3.model.HeadBucketResult;
+import com.amazonaws.services.s3.model.ListObjectsRequest;
+import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.ObjectRequestCreationException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.delete.DeleteObjectRequestFactory;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.head.HeadBucketRequestFactory;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.list.ListObjectsRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.put.PutObjectRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.util.FileSystemTestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InOrder;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.org.lidalia.slf4jtest.LoggingEvent;
 import uk.org.lidalia.slf4jtest.TestLogger;
@@ -31,6 +37,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -39,13 +46,13 @@ import static uk.org.lidalia.slf4jtest.LoggingEvent.error;
 import static uk.org.lidalia.slf4jtest.LoggingEvent.warn;
 
 /**
- * Test class for {@link S3BucketRepository}.
+ * Test class for {@link S3BucketRepositoryImpl}.
  */
 @RunWith(MockitoJUnitRunner.class)
-public class S3BucketRepositoryTest {
+public class S3BucketRepositoryImplTest {
 
 	@Mock
-	private AmazonS3 client;
+	private AmazonS3Client client;
 
 	@Mock
 	private PutObjectRequestFactory putObjectRequestFactory;
@@ -59,11 +66,33 @@ public class S3BucketRepositoryTest {
 	@Mock
 	private DeleteObjectRequest deleteObjectRequest;
 
-	private final TestLogger logger = TestLoggerFactory.getTestLogger(S3BucketRepository.class);
+	@Mock
+	private ListObjectsRequestFactory listObjectsRequestFactory;
+
+	@Mock
+	private ListObjectsRequest listObjectsRequest;
+
+	@Mock
+	private ObjectListing objectListing;
+
+	@Mock
+	private S3ObjectSummary objectSummary;
+
+	@Mock
+	private HeadBucketRequestFactory headBucketRequestFactory;
+
+	@Mock
+	private HeadBucketRequest headBucketRequest;
+
+	@Mock
+	private HeadBucketResult headBucketResult;
+
+	private final TestLogger logger = TestLoggerFactory.getTestLogger(S3BucketRepositoryImpl.class);
 
 	private final String bucketName = "mock";
+	private final String bucketLocation = "us-east-1";
 
-	private S3BucketRepository repository;
+	private S3BucketRepositoryImpl repository;
 
 	/**
 	 * Setup mocks.
@@ -73,7 +102,8 @@ public class S3BucketRepositoryTest {
 	@Before
 	public void setup() throws BucketDoesNotExistException {
 		when(client.doesBucketExist(bucketName)).thenReturn(true);
-		repository = new S3BucketRepository(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory);
+		repository = new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
+				listObjectsRequestFactory, headBucketRequestFactory);
 	}
 
 	/**
@@ -91,7 +121,8 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testConstructor_NullClient() throws BucketDoesNotExistException {
-		new S3BucketRepository(null, bucketName, putObjectRequestFactory, deleteObjectRequestFactory);
+		new S3BucketRepositoryImpl(null, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
+				listObjectsRequestFactory, headBucketRequestFactory);
 	}
 
 	/**
@@ -101,7 +132,8 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testConstructor_NullBucketName() throws BucketDoesNotExistException {
-		new S3BucketRepository(client, null, putObjectRequestFactory, deleteObjectRequestFactory);
+		new S3BucketRepositoryImpl(client, null, putObjectRequestFactory, deleteObjectRequestFactory,
+				listObjectsRequestFactory, headBucketRequestFactory);
 	}
 
 	/**
@@ -111,7 +143,8 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test(expected = IllegalArgumentException.class)
 	public void testConstructor_EmptyBucketName() throws BucketDoesNotExistException {
-		new S3BucketRepository(client, " ", putObjectRequestFactory, deleteObjectRequestFactory);
+		new S3BucketRepositoryImpl(client, " ", putObjectRequestFactory, deleteObjectRequestFactory,
+				listObjectsRequestFactory, headBucketRequestFactory);
 	}
 
 	/**
@@ -121,7 +154,8 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testConstructor_NullPutObjectRequestFactory() throws BucketDoesNotExistException {
-		new S3BucketRepository(client, bucketName, null, deleteObjectRequestFactory);
+		new S3BucketRepositoryImpl(client, bucketName, null, deleteObjectRequestFactory,
+				listObjectsRequestFactory, headBucketRequestFactory);
 	}
 
 	/**
@@ -132,7 +166,32 @@ public class S3BucketRepositoryTest {
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testConstructor_NullDeleteObjectRequestFactory() throws BucketDoesNotExistException {
-		new S3BucketRepository(client, bucketName, putObjectRequestFactory, null);
+		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, null,
+				listObjectsRequestFactory, headBucketRequestFactory);
+	}
+
+	/**
+	 * Tests that the constructor throws an exception when the given {@link ListObjectsRequestFactory} is {@code
+	 * null}.
+	 *
+	 * @throws BucketDoesNotExistException Unexpected.
+	 */
+	@Test(expected = NullPointerException.class)
+	public void testConstructor_NullListObjectsRequestFactory() throws BucketDoesNotExistException {
+		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory, null,
+				headBucketRequestFactory);
+	}
+
+	/**
+	 * Tests that the constructor throws an exception when the given {@link HeadBucketRequestFactory} is {@code
+	 * null}.
+	 *
+	 * @throws BucketDoesNotExistException Unexpected.
+	 */
+	@Test(expected = NullPointerException.class)
+	public void testConstructor_NullHeadBucketRequestFactory() throws BucketDoesNotExistException {
+		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
+				listObjectsRequestFactory, null);
 	}
 
 	/**
@@ -143,11 +202,12 @@ public class S3BucketRepositoryTest {
 	@Test(expected = BucketDoesNotExistException.class)
 	public void testConstructor_BucketDoesNotExist() throws BucketDoesNotExistException {
 		when(client.doesBucketExist(bucketName)).thenReturn(false);
-		new S3BucketRepository(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory);
+		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
+				listObjectsRequestFactory, headBucketRequestFactory);
 	}
 
 	/**
-	 * Tests that {@link S3BucketRepository#uploadFile(File, BucketPath)} throws an exception when the given {@link
+	 * Tests that {@link S3BucketRepositoryImpl#uploadFile(File, BucketPath)} throws an exception when the given {@link
 	 * File} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
@@ -156,7 +216,7 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests that {@link S3BucketRepository#uploadFile(File, BucketPath)} throws an exception when the given destination
+	 * Tests that {@link S3BucketRepositoryImpl#uploadFile(File, BucketPath)} throws an exception when the given destination
 	 * {@link BucketPath} is {@code null}.
 	 *
 	 * @throws IOException Unexpected.
@@ -167,7 +227,7 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests {@link S3BucketRepository#uploadFile(File, BucketPath)} when the given {@link File} is not accessible.
+	 * Tests {@link S3BucketRepositoryImpl#uploadFile(File, BucketPath)} when the given {@link File} is not accessible.
 	 *
 	 * @throws IOException Unexpected.
 	 */
@@ -183,7 +243,7 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests {@link S3BucketRepository#uploadFile(File, BucketPath)} when the given {@link File} is not a file.
+	 * Tests {@link S3BucketRepositoryImpl#uploadFile(File, BucketPath)} when the given {@link File} is not a file.
 	 *
 	 * @throws IOException Unexpected.
 	 */
@@ -199,7 +259,7 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests {@link S3BucketRepository#uploadFile(File, BucketPath)} when the creation of the upload request fails.
+	 * Tests {@link S3BucketRepositoryImpl#uploadFile(File, BucketPath)} when the creation of the upload request fails.
 	 *
 	 * @throws IOException                    Unexpected.
 	 * @throws ObjectRequestCreationException Expected to be caught and handled.
@@ -209,14 +269,14 @@ public class S3BucketRepositoryTest {
 		final File file = FileSystemTestUtil.createAccessibleFile();
 		final BucketPath destination = new BucketPath().append("repository");
 		final Throwable throwable = new ObjectRequestCreationException();
-		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(false);
+//		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(false);
 		when(putObjectRequestFactory.create(file, destination.asString())).thenThrow(throwable);
 
 		final URL url = repository.uploadFile(file, destination);
 
 		assertNull(url);
 		verify(client).doesBucketExist(bucketName);
-		verify(client).doesObjectExist(bucketName, destination.asString());
+//		verify(client).doesObjectExist(bucketName, destination.asString());
 		verifyNoMoreInteractions(client);
 
 		final LoggingEvent uploadLoggingEvent = debug("Uploading file: {}", destination.asString());
@@ -225,7 +285,7 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests {@link S3BucketRepository#uploadFile(File, BucketPath)} when the specified file already exists in the
+	 * Tests {@link S3BucketRepositoryImpl#uploadFile(File, BucketPath)} when the specified file already exists in the
 	 * bucket and is first deleted.
 	 *
 	 * @throws IOException                    Unexpected.
@@ -235,36 +295,6 @@ public class S3BucketRepositoryTest {
 	public void testUploadFile_DeleteExistingFile() throws IOException, ObjectRequestCreationException {
 		final File file = FileSystemTestUtil.createAccessibleFile();
 		final BucketPath destination = new BucketPath().append("repository");
-		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(true);
-		when(deleteObjectRequestFactory.create(destination.asString())).thenReturn(deleteObjectRequest);
-		when(putObjectRequestFactory.create(file, destination.asString())).thenReturn(putObjectRequest);
-		final URL expectedUrl = new URL("http", "example", "mock");
-		when(client.getUrl(bucketName, destination.asString())).thenReturn(expectedUrl);
-
-		final URL url = repository.uploadFile(file, destination);
-
-		assertEquals(expectedUrl, url);
-
-		final InOrder inOrder = Mockito.inOrder(client);
-		inOrder.verify(client).deleteObject(deleteObjectRequest);
-		inOrder.verify(client).putObject(putObjectRequest);
-
-		final LoggingEvent deleteLoggingEvent = debug("Deleting existing object: {}", destination.asString());
-		final LoggingEvent uploadLoggingEvent = debug("Uploading file: {}", destination.asString());
-		assertThat(logger.getLoggingEvents(), is(asList(deleteLoggingEvent, uploadLoggingEvent)));
-	}
-
-	/**
-	 * Tests {@link S3BucketRepository#uploadFile(File, BucketPath)}.
-	 *
-	 * @throws IOException                    Unexpected.
-	 * @throws ObjectRequestCreationException Unexpected.
-	 */
-	@Test
-	public void testUploadFile() throws IOException, ObjectRequestCreationException {
-		final File file = FileSystemTestUtil.createAccessibleFile();
-		final BucketPath destination = new BucketPath().append("repository");
-		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(false);
 		when(putObjectRequestFactory.create(file, destination.asString())).thenReturn(putObjectRequest);
 		final URL expectedUrl = new URL("http", "example", "mock");
 		when(client.getUrl(bucketName, destination.asString())).thenReturn(expectedUrl);
@@ -277,7 +307,28 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests that {@link S3BucketRepository#uploadDirectory(File, BucketPath)} throws an exception when the given
+	 * Tests {@link S3BucketRepositoryImpl#uploadFile(File, BucketPath)}.
+	 *
+	 * @throws IOException                    Unexpected.
+	 * @throws ObjectRequestCreationException Unexpected.
+	 */
+	@Test
+	public void testUploadFile() throws IOException, ObjectRequestCreationException {
+		final File file = FileSystemTestUtil.createAccessibleFile();
+		final BucketPath destination = new BucketPath().append("repository");
+		when(putObjectRequestFactory.create(file, destination.asString())).thenReturn(putObjectRequest);
+		final URL expectedUrl = new URL("http", "example", "mock");
+		when(client.getUrl(bucketName, destination.asString())).thenReturn(expectedUrl);
+
+		final URL url = repository.uploadFile(file, destination);
+
+		assertEquals(expectedUrl, url);
+		verify(client).putObject(putObjectRequest);
+		assertThat(logger.getLoggingEvents(), is(singletonList(debug("Uploading file: {}", destination.asString()))));
+	}
+
+	/**
+	 * Tests that {@link S3BucketRepositoryImpl#uploadDirectory(File, BucketPath)} throws an exception when the given
 	 * directory is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
@@ -286,7 +337,7 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests that {@link S3BucketRepository#uploadDirectory(File, BucketPath)} throws an exception when the given
+	 * Tests that {@link S3BucketRepositoryImpl#uploadDirectory(File, BucketPath)} throws an exception when the given
 	 * destination is {@code null}.
 	 *
 	 * @throws IOException Unexpected.
@@ -297,7 +348,7 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests {@link S3BucketRepository#uploadDirectory(File, BucketPath)} when the given directory is not accessible.
+	 * Tests {@link S3BucketRepositoryImpl#uploadDirectory(File, BucketPath)} when the given directory is not accessible.
 	 *
 	 * @throws IOException Unexpected.
 	 */
@@ -314,7 +365,7 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests {@link S3BucketRepository#uploadDirectory(File, BucketPath)} when the given directory is not a directory.
+	 * Tests {@link S3BucketRepositoryImpl#uploadDirectory(File, BucketPath)} when the given directory is not a directory.
 	 *
 	 * @throws IOException Unexpected.
 	 */
@@ -331,50 +382,19 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests {@link S3BucketRepository#uploadDirectory(File, BucketPath)} when the given directory already exists.
+	 * Tests {@link S3BucketRepositoryImpl#uploadDirectory(File, BucketPath)} when the given directory already exists.
 	 *
-	 * @throws IOException                    Unexpected.
-	 * @throws ObjectRequestCreationException Unexpected.
+	 * @throws IOException Unexpected.
 	 */
 	@Test
-	public void testUploadDirectory_DeleteExistingDirectory() throws IOException, ObjectRequestCreationException {
+	public void testUploadDirectory_DeleteExistingDirectory() throws IOException {
 		final File directory = FileSystemTestUtil.createAccessibleDirectory();
-
 		final BucketPath destination = new BucketPath().append("repository");
-		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(true);
-		when(deleteObjectRequestFactory.create(destination.asString())).thenReturn(deleteObjectRequest);
 
 		final URL url = repository.uploadDirectory(directory, destination);
 
 		assertNull(url);
 		verify(client).doesBucketExist(bucketName);
-		verify(client).doesObjectExist(bucketName, destination.asString());
-		verify(client).deleteObject(deleteObjectRequest);
-		verifyNoMoreInteractions(client);
-
-		final LoggingEvent deleteLoggingEvent = debug("Deleting existing object: {}", destination.asString());
-		final LoggingEvent emptyDirectoryLoggingEvent = debug("Skipping upload of empty directory: {}",
-				directory.getName());
-		assertThat(logger.getLoggingEvents(), is(asList(deleteLoggingEvent, emptyDirectoryLoggingEvent)));
-	}
-
-	/**
-	 * Tests {@link S3BucketRepository#uploadDirectory(File, BucketPath)} when the given directory is empty.
-	 *
-	 * @throws IOException                    Unexpected.
-	 * @throws ObjectRequestCreationException Unexpected.
-	 */
-	@Test
-	public void testUploadDirectory_EmptyDirectory() throws IOException, ObjectRequestCreationException {
-		final File directory = FileSystemTestUtil.createAccessibleDirectory();
-		final BucketPath destination = new BucketPath().append("repository");
-		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(false);
-
-		final URL url = repository.uploadDirectory(directory, destination);
-
-		assertNull(url);
-		verify(client).doesBucketExist(bucketName);
-		verify(client).doesObjectExist(bucketName, destination.asString());
 		verifyNoMoreInteractions(client);
 
 		assertThat(logger.getLoggingEvents(),
@@ -382,22 +402,38 @@ public class S3BucketRepositoryTest {
 	}
 
 	/**
-	 * Tests {@link S3BucketRepository#uploadDirectory(File, BucketPath)} when the given directory has a child
-	 * directory.
+	 * Tests {@link S3BucketRepositoryImpl#uploadDirectory(File, BucketPath)} when the given directory is empty.
 	 *
-	 * @throws IOException                    Unexpected.
-	 * @throws ObjectRequestCreationException Unexpected.
+	 * @throws IOException Unexpected.
 	 */
 	@Test
-	public void testUploadDirectory_ChildDirectory() throws IOException, ObjectRequestCreationException {
+	public void testUploadDirectory_EmptyDirectory() throws IOException {
+		final File directory = FileSystemTestUtil.createAccessibleDirectory();
+		final BucketPath destination = new BucketPath().append("repository");
+
+		final URL url = repository.uploadDirectory(directory, destination);
+
+		assertNull(url);
+		verify(client).doesBucketExist(bucketName);
+		verifyNoMoreInteractions(client);
+
+		assertThat(logger.getLoggingEvents(),
+				is(singletonList(debug("Skipping upload of empty directory: {}", directory.getName()))));
+	}
+
+	/**
+	 * Tests {@link S3BucketRepositoryImpl#uploadDirectory(File, BucketPath)} when the given directory has a child
+	 * directory.
+	 *
+	 * @throws IOException Unexpected.
+	 */
+	@Test
+	public void testUploadDirectory_ChildDirectory() throws IOException {
 		final File parentDirectory = FileSystemTestUtil.createAccessibleDirectory();
-		final File childDirectory = FileSystemTestUtil.createAccessibleDirectory(parentDirectory.toPath());
+		FileSystemTestUtil.createAccessibleDirectory(parentDirectory.toPath());
 
 		final BucketPath parentDirectoryDestination = new BucketPath().append("repository");
-		final BucketPath childDirectoryDestination = new BucketPath(parentDirectoryDestination)
-				.append(childDirectory.getName());
-		when(client.doesObjectExist(bucketName, parentDirectoryDestination.asString())).thenReturn(false);
-		when(client.doesObjectExist(bucketName, childDirectoryDestination.asString())).thenReturn(false);
+
 		final URL expectedUrl = new URL("http", "example", "mock");
 		when(client.getUrl(bucketName, parentDirectoryDestination.asString())).thenReturn(expectedUrl);
 
@@ -405,14 +441,12 @@ public class S3BucketRepositoryTest {
 
 		assertEquals(expectedUrl, url);
 		verify(client).doesBucketExist(bucketName);
-		verify(client).doesObjectExist(bucketName, parentDirectoryDestination.asString());
-		verify(client).doesObjectExist(bucketName, childDirectoryDestination.asString());
 		verify(client).getUrl(bucketName, parentDirectoryDestination.asString());
 		verifyNoMoreInteractions(client);
 	}
 
 	/**
-	 * Tests {@link S3BucketRepository#uploadDirectory(File, BucketPath)} when the given directory has a child file.
+	 * Tests {@link S3BucketRepositoryImpl#uploadDirectory(File, BucketPath)} when the given directory has a child file.
 	 *
 	 * @throws IOException                    Unexpected.
 	 * @throws ObjectRequestCreationException Unexpected.
@@ -424,8 +458,6 @@ public class S3BucketRepositoryTest {
 
 		final BucketPath directoryDestination = new BucketPath().append("repository");
 		final BucketPath fileDestination = new BucketPath(directoryDestination).append(file.getName());
-		when(client.doesObjectExist(bucketName, directoryDestination.asString())).thenReturn(false);
-		when(client.doesObjectExist(bucketName, fileDestination.asString())).thenReturn(false);
 		when(putObjectRequestFactory.create(file, fileDestination.asString())).thenReturn(putObjectRequest);
 		final URL expectedUrl = new URL("http", "example", "mock");
 		when(client.getUrl(bucketName, directoryDestination.asString())).thenReturn(expectedUrl);
@@ -434,12 +466,122 @@ public class S3BucketRepositoryTest {
 
 		assertEquals(expectedUrl, url);
 		verify(client).doesBucketExist(bucketName);
-		verify(client).doesObjectExist(bucketName, directoryDestination.asString());
-		verify(client).doesObjectExist(bucketName, fileDestination.asString());
 		verify(client).putObject(putObjectRequest);
 		verify(client).getUrl(bucketName, directoryDestination.asString());
 		verify(client).getUrl(bucketName, fileDestination.asString());
 		verifyNoMoreInteractions(client);
+	}
+
+	/**
+	 * Tests that {@link S3BucketRepositoryImpl#deleteDirectory(String)} throws an exception when the given prefix is
+	 * {@code null}.
+	 */
+	@Test(expected = NullPointerException.class)
+	public void testDeleteDirectory_NullPrefix() {
+		repository.deleteDirectory(null);
+	}
+
+	/**
+	 * Tests that {@link S3BucketRepositoryImpl#deleteDirectory(String)} throws an exception when the given prefix is
+	 * empty.
+	 */
+	@Test(expected = IllegalArgumentException.class)
+	public void testDeleteDirectory_EmptyPrefix() {
+		repository.deleteDirectory(" ");
+	}
+
+	/**
+	 * Tests {@link S3BucketRepositoryImpl#deleteDirectory(String)}.
+	 */
+	@Test
+	public void testDeleteDirectory() {
+		final String prefix = "prefix";
+		when(listObjectsRequestFactory.create(prefix)).thenReturn(listObjectsRequest);
+		when(client.listObjects(listObjectsRequest)).thenReturn(objectListing);
+		when(objectListing.getObjectSummaries()).thenReturn(singletonList(objectSummary));
+		when(objectListing.isTruncated()).thenReturn(false);
+		when(objectSummary.getKey()).thenReturn(prefix);
+		when(deleteObjectRequestFactory.create(prefix)).thenReturn(deleteObjectRequest);
+
+		repository.deleteDirectory(prefix);
+
+		verify(client).deleteObject(deleteObjectRequest);
+		assertThat(logger.getLoggingEvents(), is(singletonList(debug("Deleting existing object: {}", prefix))));
+	}
+
+	/**
+	 * Tests {@link S3BucketRepositoryImpl#deleteDirectory(String)} when the returned collections of objects is
+	 * truncated.
+	 */
+	@Test
+	public void testDeleteDirectory_ResultsTruncated() {
+		final String prefix = "prefix";
+		when(listObjectsRequestFactory.create(prefix)).thenReturn(listObjectsRequest);
+
+		final ObjectListing objectListing1 = mock(ObjectListing.class);
+		final ObjectListing objectListing2 = mock(ObjectListing.class);
+
+		when(client.listObjects(listObjectsRequest)).thenReturn(objectListing1);
+		when(client.listNextBatchOfObjects(objectListing1)).thenReturn(objectListing2);
+
+		final S3ObjectSummary objectSummary1 = mock(S3ObjectSummary.class);
+		final S3ObjectSummary objectSummary2 = mock(S3ObjectSummary.class);
+
+		final String key1 = "key1";
+		final String key2 = "key2";
+		when(objectSummary1.getKey()).thenReturn(key1);
+		when(objectSummary2.getKey()).thenReturn(key2);
+
+		when(objectListing1.getObjectSummaries()).thenReturn(singletonList(objectSummary1));
+		when(objectListing2.getObjectSummaries()).thenReturn(singletonList(objectSummary2));
+
+		when(objectListing1.isTruncated()).thenReturn(true);
+		when(objectListing2.isTruncated()).thenReturn(false);
+
+		final DeleteObjectRequest deleteObjectRequest1 = mock(DeleteObjectRequest.class);
+		final DeleteObjectRequest deleteObjectRequest2 = mock(DeleteObjectRequest.class);
+		when(deleteObjectRequestFactory.create(key1)).thenReturn(deleteObjectRequest1);
+		when(deleteObjectRequestFactory.create(key2)).thenReturn(deleteObjectRequest2);
+
+		repository.deleteDirectory(prefix);
+
+		verify(client).deleteObject(deleteObjectRequest1);
+		verify(client).deleteObject(deleteObjectRequest2);
+		final LoggingEvent event1 = debug("Deleting existing object: {}", key1);
+		final LoggingEvent event2 = debug("Deleting existing object: {}", key2);
+		assertThat(logger.getLoggingEvents(), is(asList(event1, event2)));
+	}
+
+	/**
+	 * Tests {@link S3BucketRepositoryImpl#getHostingUrl(String)} when the given key is null.
+	 */
+	@Test
+	public void testGetHostingUrl_NullKey() {
+		when(headBucketRequestFactory.create()).thenReturn(headBucketRequest);
+		when(client.headBucket(headBucketRequest)).thenReturn(headBucketResult);
+		when(headBucketResult.getBucketRegion()).thenReturn(bucketLocation);
+		final String key = null;
+		final String expectedUrl = "http://" + bucketName + ".s3-website-" + bucketLocation + ".amazonaws.com/";
+
+		final String url = repository.getHostingUrl(key);
+
+		assertEquals(expectedUrl, url);
+	}
+
+	/**
+	 * Tests {@link S3BucketRepositoryImpl#getHostingUrl(String)}.
+	 */
+	@Test
+	public void testGetHostingUrl() {
+		when(headBucketRequestFactory.create()).thenReturn(headBucketRequest);
+		when(client.headBucket(headBucketRequest)).thenReturn(headBucketResult);
+		when(headBucketResult.getBucketRegion()).thenReturn(bucketLocation);
+		final String key = "key";
+		final String expectedUrl = "http://" + bucketName + ".s3-website-" + bucketLocation + ".amazonaws.com/" + key;
+
+		final String url = repository.getHostingUrl(key);
+
+		assertEquals(expectedUrl, url);
 	}
 
 }

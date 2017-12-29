@@ -1,7 +1,7 @@
 package com.avojak.mojo.aws.p2.maven.plugin;
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.avojak.mojo.aws.p2.maven.plugin.generator.LandingPageGenerator;
 import com.avojak.mojo.aws.p2.maven.plugin.resource.ResourceUtil;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
@@ -10,7 +10,6 @@ import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepository;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepositoryFactory;
 import com.google.common.html.HtmlEscapers;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -21,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.Date;
 
 /**
@@ -36,6 +34,10 @@ public class AWSP2Mojo extends AbstractMojo {
 	private static final String SNAPSHOT_QUALIFIER = "-SNAPSHOT";
 	private static final String SNAPSHOT_DIR = "snapshot";
 	private static final String RELEASE_DIR = "release";
+
+	// Attempt to use an arbitrary default region for creating the client, even if it's incorrect.
+	// See: https://github.com/aws/aws-sdk-java/issues/1142#issuecomment-300308009
+	private static final String DEFAULT_REGION = "us-east-1";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AWSP2Mojo.class);
 
@@ -121,7 +123,10 @@ public class AWSP2Mojo extends AbstractMojo {
 	 * Default constructor invoked at runtime.
 	 */
 	public AWSP2Mojo() {
-		this(new S3BucketRepositoryFactory(new AmazonS3Client(new DefaultAWSCredentialsProviderChain())),
+		this(new S3BucketRepositoryFactory(AmazonS3ClientBuilder.standard().withRegion(DEFAULT_REGION)
+						.withForceGlobalBucketAccessEnabled(true)
+						.withCredentials(new DefaultAWSCredentialsProviderChain())
+						.build()),
 				new LandingPageGenerator(HtmlEscapers.htmlEscaper()));
 	}
 
@@ -141,7 +146,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
+	public void execute() throws MojoFailureException {
 		if (skip) {
 			LOGGER.info(ResourceUtil.getString(getClass(), "info.skippingExecution"));
 			return;
@@ -173,7 +178,8 @@ public class AWSP2Mojo extends AbstractMojo {
 
 		destination.append(targetSiteDirectory);
 
-		final URL url = repository.uploadDirectory(repositoryDirectory, destination);
+		repository.deleteDirectory(destination.asString());
+		repository.uploadDirectory(repositoryDirectory, destination);
 
 		// Generate an HTML landing page if specified
 		if (generateLandingPage) {
@@ -186,9 +192,8 @@ public class AWSP2Mojo extends AbstractMojo {
 			}
 		}
 
-		if (url != null) {
-			LOGGER.info(ResourceUtil.getString(getClass(), "info.uploadComplete"), url.toString());
-		}
+		final String url = repository.getHostingUrl(destination.asString());
+		LOGGER.info(ResourceUtil.getString(getClass(), "info.uploadComplete"), url);
 	}
 
 	/**
