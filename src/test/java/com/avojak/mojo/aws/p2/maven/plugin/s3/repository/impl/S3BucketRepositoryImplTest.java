@@ -12,6 +12,8 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.ObjectRequestCreationException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl.BucketTrie;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.delete.DeleteObjectRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.head.HeadBucketRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.list.ListObjectsRequestFactory;
@@ -29,7 +31,6 @@ import uk.org.lidalia.slf4jtest.TestLoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -37,6 +38,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -234,9 +236,9 @@ public class S3BucketRepositoryImplTest {
 	@Test
 	public void testUploadFile_FileNotAccessible() throws IOException {
 		final File file = FileSystemTestUtil.createInaccessibleFile();
-		final URL url = repository.uploadFile(file, new BucketPath());
+		final String key = repository.uploadFile(file, new BucketPath());
 
-		assertNull(url);
+		assertNull(key);
 		assertThat(logger.getLoggingEvents(), is(singletonList(warn("File is not accessible: {}", file.getName()))));
 		verify(client).doesBucketExist(bucketName);
 		verifyNoMoreInteractions(client);
@@ -250,9 +252,9 @@ public class S3BucketRepositoryImplTest {
 	@Test
 	public void testUploadFile_FileNotAFile() throws IOException {
 		final File file = FileSystemTestUtil.createAccessibleDirectory();
-		final URL url = repository.uploadFile(file, new BucketPath());
+		final String key = repository.uploadFile(file, new BucketPath());
 
-		assertNull(url);
+		assertNull(key);
 		assertThat(logger.getLoggingEvents(), is(singletonList(warn("File is not accessible: {}", file.getName()))));
 		verify(client).doesBucketExist(bucketName);
 		verifyNoMoreInteractions(client);
@@ -269,14 +271,12 @@ public class S3BucketRepositoryImplTest {
 		final File file = FileSystemTestUtil.createAccessibleFile();
 		final BucketPath destination = new BucketPath().append("repository");
 		final Throwable throwable = new ObjectRequestCreationException();
-//		when(client.doesObjectExist(bucketName, destination.asString())).thenReturn(false);
 		when(putObjectRequestFactory.create(file, destination.asString())).thenThrow(throwable);
 
-		final URL url = repository.uploadFile(file, destination);
+		final String key = repository.uploadFile(file, destination);
 
-		assertNull(url);
+		assertNull(key);
 		verify(client).doesBucketExist(bucketName);
-//		verify(client).doesObjectExist(bucketName, destination.asString());
 		verifyNoMoreInteractions(client);
 
 		final LoggingEvent uploadLoggingEvent = debug("Uploading file: {}", destination.asString());
@@ -296,12 +296,12 @@ public class S3BucketRepositoryImplTest {
 		final File file = FileSystemTestUtil.createAccessibleFile();
 		final BucketPath destination = new BucketPath().append("repository");
 		when(putObjectRequestFactory.create(file, destination.asString())).thenReturn(putObjectRequest);
-		final URL expectedUrl = new URL("http", "example", "mock");
-		when(client.getUrl(bucketName, destination.asString())).thenReturn(expectedUrl);
+		final String expectedKey = destination.asString();
+//		when(client.getUrl(bucketName, destination.asString())).thenReturn(expectedUrl);
 
-		final URL url = repository.uploadFile(file, destination);
+		final String key = repository.uploadFile(file, destination);
 
-		assertEquals(expectedUrl, url);
+		assertEquals(expectedKey, key);
 		verify(client).putObject(putObjectRequest);
 		assertThat(logger.getLoggingEvents(), is(singletonList(debug("Uploading file: {}", destination.asString()))));
 	}
@@ -317,12 +317,12 @@ public class S3BucketRepositoryImplTest {
 		final File file = FileSystemTestUtil.createAccessibleFile();
 		final BucketPath destination = new BucketPath().append("repository");
 		when(putObjectRequestFactory.create(file, destination.asString())).thenReturn(putObjectRequest);
-		final URL expectedUrl = new URL("http", "example", "mock");
-		when(client.getUrl(bucketName, destination.asString())).thenReturn(expectedUrl);
+		final String expectedKey = destination.asString();
+//		when(client.getUrl(bucketName, destination.asString())).thenReturn(expectedUrl);
 
-		final URL url = repository.uploadFile(file, destination);
+		final String key = repository.uploadFile(file, destination);
 
-		assertEquals(expectedUrl, url);
+		assertEquals(expectedKey, key);
 		verify(client).putObject(putObjectRequest);
 		assertThat(logger.getLoggingEvents(), is(singletonList(debug("Uploading file: {}", destination.asString()))));
 	}
@@ -355,9 +355,9 @@ public class S3BucketRepositoryImplTest {
 	@Test
 	public void testUploadDirectory_DirectoryNotAccessible() throws IOException {
 		final File directory = FileSystemTestUtil.createInaccessibleDirectory();
-		final URL url = repository.uploadDirectory(directory, new BucketPath());
+		final Trie<String, String> content = repository.uploadDirectory(directory, new BucketPath());
 
-		assertNull(url);
+		assertTrue(content.isEmpty());
 		assertThat(logger.getLoggingEvents(),
 				is(singletonList(warn("Directory is not accessible: {}", directory.getName()))));
 		verify(client).doesBucketExist(bucketName);
@@ -372,9 +372,9 @@ public class S3BucketRepositoryImplTest {
 	@Test
 	public void testUploadDirectory_DirectoryNotADirectory() throws IOException {
 		final File directory = FileSystemTestUtil.createAccessibleFile();
-		final URL url = repository.uploadDirectory(directory, new BucketPath());
+		final Trie<String, String> content = repository.uploadDirectory(directory, new BucketPath());
 
-		assertNull(url);
+		assertTrue(content.isEmpty());
 		assertThat(logger.getLoggingEvents(),
 				is(singletonList(warn("Directory is not accessible: {}", directory.getName()))));
 		verify(client).doesBucketExist(bucketName);
@@ -391,9 +391,9 @@ public class S3BucketRepositoryImplTest {
 		final File directory = FileSystemTestUtil.createAccessibleDirectory();
 		final BucketPath destination = new BucketPath().append("repository");
 
-		final URL url = repository.uploadDirectory(directory, destination);
+		final Trie<String, String> content = repository.uploadDirectory(directory, destination);
 
-		assertNull(url);
+		assertTrue(content.isEmpty());
 		verify(client).doesBucketExist(bucketName);
 		verifyNoMoreInteractions(client);
 
@@ -411,9 +411,9 @@ public class S3BucketRepositoryImplTest {
 		final File directory = FileSystemTestUtil.createAccessibleDirectory();
 		final BucketPath destination = new BucketPath().append("repository");
 
-		final URL url = repository.uploadDirectory(directory, destination);
+		final Trie<String, String> content = repository.uploadDirectory(directory, destination);
 
-		assertNull(url);
+		assertTrue(content.isEmpty());
 		verify(client).doesBucketExist(bucketName);
 		verifyNoMoreInteractions(client);
 
@@ -434,14 +434,15 @@ public class S3BucketRepositoryImplTest {
 
 		final BucketPath parentDirectoryDestination = new BucketPath().append("repository");
 
-		final URL expectedUrl = new URL("http", "example", "mock");
-		when(client.getUrl(bucketName, parentDirectoryDestination.asString())).thenReturn(expectedUrl);
+		final Trie<String, String> expectedContent = new BucketTrie();
+//		final URL expectedUrl = new URL("http", "example", "mock");
+//		when(client.getUrl(bucketName, parentDirectoryDestination.asString())).thenReturn(expectedUrl);
 
-		final URL url = repository.uploadDirectory(parentDirectory, parentDirectoryDestination);
+		final Trie<String, String> content = repository.uploadDirectory(parentDirectory, parentDirectoryDestination);
 
-		assertEquals(expectedUrl, url);
+		assertEquals(expectedContent, content);
 		verify(client).doesBucketExist(bucketName);
-		verify(client).getUrl(bucketName, parentDirectoryDestination.asString());
+//		verify(client).getUrl(bucketName, parentDirectoryDestination.asString());
 		verifyNoMoreInteractions(client);
 	}
 
@@ -459,16 +460,24 @@ public class S3BucketRepositoryImplTest {
 		final BucketPath directoryDestination = new BucketPath().append("repository");
 		final BucketPath fileDestination = new BucketPath(directoryDestination).append(file.getName());
 		when(putObjectRequestFactory.create(file, fileDestination.asString())).thenReturn(putObjectRequest);
-		final URL expectedUrl = new URL("http", "example", "mock");
-		when(client.getUrl(bucketName, directoryDestination.asString())).thenReturn(expectedUrl);
+		when(headBucketRequestFactory.create()).thenReturn(headBucketRequest);
+		when(client.headBucket(headBucketRequest)).thenReturn(headBucketResult);
+		when(headBucketResult.getBucketRegion()).thenReturn(bucketLocation);
+		final Trie<String, String> expectedContent = new BucketTrie();
+		final String expectedUrl =
+				"http://" + bucketName + ".s3-website-" + bucketLocation + ".amazonaws.com/repository/" + file.getName();
+		expectedContent.insert(fileDestination.asString(), expectedUrl);
+//		final URL expectedUrl = new URL("http", "example", "mock");
+//		when(client.getUrl(bucketName, directoryDestination.asString())).thenReturn(expectedUrl);
 
-		final URL url = repository.uploadDirectory(directory, directoryDestination);
+		final Trie<String, String> content = repository.uploadDirectory(directory, directoryDestination);
 
-		assertEquals(expectedUrl, url);
+		assertEquals(expectedContent, content);
 		verify(client).doesBucketExist(bucketName);
 		verify(client).putObject(putObjectRequest);
-		verify(client).getUrl(bucketName, directoryDestination.asString());
-		verify(client).getUrl(bucketName, fileDestination.asString());
+		verify(client).headBucket(headBucketRequest);
+//		verify(client).getUrl(bucketName, directoryDestination.asString());
+//		verify(client).getUrl(bucketName, fileDestination.asString());
 		verifyNoMoreInteractions(client);
 	}
 

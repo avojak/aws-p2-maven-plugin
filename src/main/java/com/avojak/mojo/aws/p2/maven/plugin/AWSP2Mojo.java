@@ -2,10 +2,13 @@ package com.avojak.mojo.aws.p2.maven.plugin;
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.avojak.mojo.aws.p2.maven.plugin.generator.LandingPageGenerator;
+import com.avojak.mojo.aws.p2.maven.plugin.index.formatter.HtmlLandingPageFormatter;
+import com.avojak.mojo.aws.p2.maven.plugin.index.generator.LandingPageGenerator;
+import com.avojak.mojo.aws.p2.maven.plugin.index.writer.HtmlLandingPageWriter;
 import com.avojak.mojo.aws.p2.maven.plugin.resource.ResourceUtil;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepository;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepositoryFactory;
 import com.google.common.html.HtmlEscapers;
@@ -91,7 +94,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	private boolean dedicatedBuckets;
 
 	/**
-	 * Whether or not to generate a web-accessible landing page for the update site. If {@code true}, the HTML landing
+	 * Whether or not to write a web-accessible landing page for the update site. If {@code true}, the HTML landing
 	 * page will be created and uploaded into the root of the update site.
 	 */
 	@Parameter(name = "generateLandingPage", property = "aws-p2.generateLandingPage", defaultValue = "true")
@@ -122,12 +125,13 @@ public class AWSP2Mojo extends AbstractMojo {
 	/**
 	 * Default constructor invoked at runtime.
 	 */
-	public AWSP2Mojo() {
+	public AWSP2Mojo() throws IOException {
 		this(new S3BucketRepositoryFactory(AmazonS3ClientBuilder.standard().withRegion(DEFAULT_REGION)
 						.withForceGlobalBucketAccessEnabled(true)
 						.withCredentials(new DefaultAWSCredentialsProviderChain())
 						.build()),
-				new LandingPageGenerator(HtmlEscapers.htmlEscaper()));
+				new LandingPageGenerator(new HtmlLandingPageFormatter(HtmlEscapers.htmlEscaper()),
+						new HtmlLandingPageWriter()));
 	}
 
 	/**
@@ -135,7 +139,8 @@ public class AWSP2Mojo extends AbstractMojo {
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
 	 *
-	 * @param repositoryFactory The {@link S3BucketRepositoryFactory}.
+	 * @param repositoryFactory    The {@link S3BucketRepositoryFactory}.
+	 * @param landingPageGenerator
 	 */
 	AWSP2Mojo(final S3BucketRepositoryFactory repositoryFactory, final LandingPageGenerator landingPageGenerator) {
 		this.repositoryFactory = repositoryFactory;
@@ -179,16 +184,18 @@ public class AWSP2Mojo extends AbstractMojo {
 		destination.append(targetSiteDirectory);
 
 		repository.deleteDirectory(destination.asString());
-		repository.uploadDirectory(repositoryDirectory, destination);
+		final Trie<String, String> content = repository.uploadDirectory(repositoryDirectory, destination);
+		// TODO: Log a message before this
+		content.log();
 
 		// Generate an HTML landing page if specified
 		if (generateLandingPage) {
 			try {
 				final BucketPath landingPageDestination = new BucketPath(destination).append("index.html");
-				repository.uploadFile(landingPageGenerator.generate(bucket, project.getArtifactId(), new Date()),
-						landingPageDestination);
+				final File index = landingPageGenerator.generate(bucket, project.getArtifactId(), content, new Date());
+				repository.uploadFile(index, landingPageDestination);
 			} catch (IOException e) {
-				throw new MojoFailureException("Unable to generate landing page", e);
+				throw new MojoFailureException("Unable to write landing page", e);
 			}
 		}
 
@@ -271,11 +278,11 @@ public class AWSP2Mojo extends AbstractMojo {
 	}
 
 	/**
-	 * Sets the generate landing page flag.
+	 * Sets the write landing page flag.
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
 	 *
-	 * @param generateLandingPage The generate landing page flag.
+	 * @param generateLandingPage The write landing page flag.
 	 */
 	void setGenerateLandingPage(final boolean generateLandingPage) {
 		this.generateLandingPage = generateLandingPage;

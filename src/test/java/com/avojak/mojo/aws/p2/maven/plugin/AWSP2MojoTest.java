@@ -1,6 +1,6 @@
 package com.avojak.mojo.aws.p2.maven.plugin;
 
-import com.avojak.mojo.aws.p2.maven.plugin.generator.LandingPageGenerator;
+import com.avojak.mojo.aws.p2.maven.plugin.generator.HtmlLandingPageWriter;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepositoryFactory;
@@ -53,7 +53,7 @@ public class AWSP2MojoTest {
 	private S3BucketRepositoryFactory repositoryFactory;
 
 	@Mock
-	private LandingPageGenerator landingPageGenerator;
+	private HtmlLandingPageWriter landingPageGenerator;
 
 	@Mock
 	private S3BucketRepositoryImpl repository;
@@ -227,7 +227,7 @@ public class AWSP2MojoTest {
 	}
 
 	/**
-	 * Tests that {@link AWSP2Mojo#execute()} does not generate a landing page when the landing page flag is set to
+	 * Tests that {@link AWSP2Mojo#execute()} does not write a landing page when the landing page flag is set to
 	 * {@code false}.
 	 *
 	 * @throws MojoFailureException Unexpected.
@@ -245,7 +245,7 @@ public class AWSP2MojoTest {
 		mojo.execute();
 
 		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
-		verify(landingPageGenerator, never()).generate(eq(bucketName), eq(artifactId), any(Date.class));
+		verify(landingPageGenerator, never()).write(eq(bucketName), eq(artifactId), any(Date.class));
 	}
 
 	/**
@@ -268,7 +268,7 @@ public class AWSP2MojoTest {
 		mojo.execute();
 
 		assertThat(logger.getLoggingEvents(), is(singletonList(info("Upload complete: {}", expectedUrl.toString()))));
-		verify(landingPageGenerator).generate(eq(bucketName), eq(artifactId), any(Date.class));
+		verify(landingPageGenerator).write(eq(bucketName), eq(artifactId), any(Date.class));
 	}
 
 }

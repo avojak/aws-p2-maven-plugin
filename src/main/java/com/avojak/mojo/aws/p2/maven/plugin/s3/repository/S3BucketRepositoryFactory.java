@@ -8,6 +8,8 @@ import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.head.HeadBucketReq
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.list.ListObjectsRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.put.PutObjectRequestFactory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 /**
  * Factory class to create instances of {@link S3BucketRepositoryImpl}.
  */
@@ -18,10 +20,10 @@ public class S3BucketRepositoryFactory {
 	/**
 	 * Constructor.
 	 *
-	 * @param client The instance of {@link AmazonS3}.
+	 * @param client The instance of {@link AmazonS3}. Cannot be {@code null}.
 	 */
 	public S3BucketRepositoryFactory(final AmazonS3 client) {
-		this.client = client;
+		this.client = checkNotNull(client, "client cannot be null");
 	}
 
 	/**

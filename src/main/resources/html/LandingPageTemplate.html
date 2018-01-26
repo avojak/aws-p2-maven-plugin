@@ -7,19 +7,23 @@
             footer {
                 font-size: small;
             }
+
             header {
                 background-color: #27AE60;
             }
+
             main {
                 margin-top: 50px;
                 margin-bottom: 50px;
             }
+
             #banner {
                 height: 90px;
                 line-height: 90px;
                 margin-left: 10px;
                 color: #FFF;
             }
+
             /**
              * Icon created by Yusuke Kamiyamane (http://p.yusukekamiyamane.com/) and available for use under the
              * Creative Commons (Attribution 3.0 Unported) license (https://creativecommons.org/licenses/by/3.0/legalcode).
@@ -48,37 +52,21 @@
                 <p>{{message}}</p>
             </div>
             <div>
-                <div id="toggle"><span id="toggleText">{{showText}}</span></div>
+                <div id="toggle"><a href="#"><span id="toggleText">{{show}}</span></a></div>
                 <div id="hideable" style="display:none">
                     <ul>
-                        <li class="folder">0.0.1-SNAPSHOT</li>
-                        <ul>
-                            <li class="folder">features</li>
-                            <ul>
-                                <li class="file"><a href="#">example-eclipse-plugin.feature.source_0.0.1.20171229-1822.jar</a></li>
-                                <li class="file"><a href="#">example-eclipse-plugin.feature_0.0.1.20171229-1822.jar</a></li>
-                            </ul>
-                            <li class="folder">plugins</li>
-                            <ul>
-                                <li class="file"><a href="#">example-eclipse-plugin.core.source_0.0.1.20171229-1822.jar</a></li>
-                                <li class="file"><a href="#">example-eclipse-plugin.core_0.0.1.20171229-1822.jar</a></li>
-                            </ul>
-                            <li class="file"><a href="#">artifacts.jar</a></li>
-                            <li class="file"><a href="#">artifacts.xml.xz</a></li>
-                            <li class="file"><a href="#">content.jar</a></li>
-                            <li class="file"><a href="#">content.xml.xz</a></li>
-                            <li class="file"><a href="#">p2.index</a></li>
-                        </ul>
+                        {{repositoryContent}}
                     </ul>
                 </div>
             </div>
         </main>
         <hr>
         <footer>
-            <p><i>Generated with <a href="https://github.com/avojak/aws-p2-maven-plugin">AWS p2 Maven Plugin</a> by <a href="https://avojak.com">avojak</a>. {{timestamp}}</i></p>
+            <p><i>Generated with <a href="https://github.com/avojak/aws-p2-maven-plugin">AWS p2 Maven Plugin</a> by <a
+                    href="https://avojak.com">avojak</a>. {{timestamp}}</i></p>
             <script>
-                var showText = "{{showText}}";
-                var hideText = "{{hideText}}";
+                var showText = "{{show}}";
+                var hideText = "{{hide}}";
 
                 (function () {
                     var toggleElement = document.getElementById('toggle');
