@@ -1,6 +1,6 @@
 package com.avojak.mojo.aws.p2.maven.plugin.index.formatter;
 
-import com.avojak.mojo.aws.p2.maven.plugin.resource.ResourceUtil;
+import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.TrieNode;
 import com.google.common.base.Optional;
@@ -14,6 +14,7 @@ import java.text.MessageFormat;
 import java.util.Date;
 import java.util.Map;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -78,6 +79,13 @@ public class HtmlLandingPageFormatter implements LandingPageFormatter {
 	@Override
 	public String format(final String bucketName, final String projectName, final Trie<String, String> content,
 	                     final Date date) {
+		checkNotNull(bucketName, "bucketName cannot be null");
+		checkArgument(!bucketName.trim().isEmpty(), "bucketName cannot be empty");
+		checkNotNull(projectName, "projectName cannot be null");
+		checkArgument(!projectName.trim().isEmpty(), "projectName cannot be empty");
+		checkNotNull(content, "content cannot be null");
+		checkNotNull(date, "date cannot be null");
+
 		final String escapedBucketName = escaper.escape(bucketName);
 		final String escapedProjectName = escaper.escape(projectName);
 

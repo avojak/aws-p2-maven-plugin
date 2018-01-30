@@ -1,18 +1,17 @@
 package com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl;
 
-import com.avojak.mojo.aws.p2.maven.plugin.resource.ResourceUtil;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.TrieNode;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.printer.TriePrinter;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.printer.impl.DebugLogTriePrinter;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.printer.impl.SystemOutTriePrinter;
+import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -57,7 +56,7 @@ public class BucketTrie implements Trie<String, String> {
 		checkArgument(!key.trim().isEmpty(), "key cannot be empty");
 
 		if (prefix != null && !key.startsWith(prefix)) {
-			LOGGER.debug(MessageFormat.format(ResourceUtil.getString(getClass(), "nonMatchingPrefix"), key, prefix));
+			LOGGER.debug(ResourceUtil.getString(getClass(), "nonMatchingPrefix"), key, prefix);
 			return;
 		}
 

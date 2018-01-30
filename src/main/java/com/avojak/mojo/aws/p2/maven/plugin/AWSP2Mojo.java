@@ -5,12 +5,14 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.avojak.mojo.aws.p2.maven.plugin.index.formatter.HtmlLandingPageFormatter;
 import com.avojak.mojo.aws.p2.maven.plugin.index.generator.LandingPageGenerator;
 import com.avojak.mojo.aws.p2.maven.plugin.index.writer.HtmlLandingPageWriter;
-import com.avojak.mojo.aws.p2.maven.plugin.resource.ResourceUtil;
+import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepository;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepositoryFactory;
+import com.avojak.mojo.aws.p2.maven.plugin.util.file.FileFactory;
+import com.avojak.mojo.aws.p2.maven.plugin.util.file.FileWriterFactory;
 import com.google.common.html.HtmlEscapers;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
@@ -131,7 +133,7 @@ public class AWSP2Mojo extends AbstractMojo {
 						.withCredentials(new DefaultAWSCredentialsProviderChain())
 						.build()),
 				new LandingPageGenerator(new HtmlLandingPageFormatter(HtmlEscapers.htmlEscaper()),
-						new HtmlLandingPageWriter()));
+						new HtmlLandingPageWriter(new FileFactory(), new FileWriterFactory())));
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package com.avojak.mojo.aws.p2.maven.plugin.resource;
+package com.avojak.mojo.aws.p2.maven.plugin.util.resource;
 
 import java.util.ResourceBundle;
 

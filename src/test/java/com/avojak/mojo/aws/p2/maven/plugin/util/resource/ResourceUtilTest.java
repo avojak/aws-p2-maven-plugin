@@ -1,6 +1,7 @@
-package com.avojak.mojo.aws.p2.maven.plugin.resource;
+package com.avojak.mojo.aws.p2.maven.plugin.util.resource;
 
 import com.avojak.mojo.aws.p2.maven.plugin.AWSP2Mojo;
+import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

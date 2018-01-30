@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -45,6 +46,12 @@ public class LandingPageGenerator {
 	 */
 	public File generate(final String bucketName, final String projectName, final Trie<String, String> content,
 	                     final Date date) throws IOException {
+		checkNotNull(bucketName, "bucketName cannot be null");
+		checkArgument(!bucketName.trim().isEmpty(), "bucketName cannot be empty");
+		checkNotNull(projectName, "projectName cannot be null");
+		checkArgument(!projectName.trim().isEmpty(), "projectName cannot be empty");
+		checkNotNull(content, "content cannot be null");
+		checkNotNull(date, "date cannot be null");
 		final String html = formatter.format(bucketName, projectName, content, date);
 		return writer.write(html, PAGE_NAME);
 	}

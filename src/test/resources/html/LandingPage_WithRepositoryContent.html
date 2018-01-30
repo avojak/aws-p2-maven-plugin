@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>{{title}}</title>
+        <title>p2.example.com</title>
         <style>
             footer {
                 font-size: small;
@@ -44,20 +44,23 @@
     <body>
         <header>
             <div id="banner">
-                <h1>{{banner}}</h1>
+                <h1>p2.example.com Eclipse software repository</h1>
             </div>
         </header>
         <main>
             <div>
                 <p>
-                    {{message}}
+                    This URL is an Eclipse software repository for example-project, and must be used in Eclipse (<a href="http://help.eclipse.org/topic/org.eclipse.platform.doc.user/tasks/tasks-127.htm">See how</a>)
                 </p>
             </div>
             <div>
-                <div id="toggle"><a href="#"><span id="toggleText">{{show}}</span></a></div>
+                <div id="toggle"><a href="#"><span id="toggleText">Show repository content</span></a></div>
                 <div id="hideable" style="display:none">
                     <ul>
-                        {{repositoryContent}}
+                        <li class="folder">folder</li>
+<ul>
+    <li class="file"><a href="http://www.example.com/file">file</a></li>
+</ul>
                     </ul>
                 </div>
             </div>
@@ -66,11 +69,11 @@
         <footer>
             <p>
                 <i>Generated with <a href="https://github.com/avojak/aws-p2-maven-plugin">AWS p2 Maven Plugin</a> by <a
-                        href="https://avojak.com">avojak</a>. {{timestamp}}</i>
+                        href="https://avojak.com">avojak</a>. Jan 26, 2018 2:14:17 PM</i>
             </p>
             <script>
-                var showText = "{{show}}";
-                var hideText = "{{hide}}";
+                var showText = "Show repository content";
+                var hideText = "Hide repository content";
 
                 (function () {
                     var toggleElement = document.getElementById('toggle');
