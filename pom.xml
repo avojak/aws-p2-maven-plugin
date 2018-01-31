@@ -164,9 +164,13 @@
                         <!-- Exclude the HelpMojo -->
                         <exclude>**/HelpMojo.*</exclude>
                         <!-- Exclude factories not intended to be tested -->
+                        <exclude>**/AmazonS3ClientFactory.*</exclude>
+                        <exclude>**/LandingPageGeneratorFactory.*</exclude>
                         <exclude>**/S3BucketRepositoryFactory.*</exclude>
                         <!-- Exclude interfaces -->
                         <exclude>**/S3BucketRepository.*</exclude>
+                        <!-- Exclude classes which cannot be tested -->
+                        <exclude>**/SystemOutTriePrinter.*</exclude>
                     </excludes>
                 </configuration>
             </plugin>

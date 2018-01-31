@@ -1,8 +1,8 @@
 package com.avojak.mojo.aws.p2.maven.plugin.index.formatter;
 
-import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.TrieNode;
+import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import com.google.common.base.Optional;
 import com.google.common.escape.Escaper;
 import com.google.common.io.Resources;
@@ -45,6 +45,13 @@ public class HtmlLandingPageFormatter implements LandingPageFormatter {
 	private final String showContent;
 	private final String hideContent;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param escaper The {@link Escaper}. Cannot be {@code null}.
+	 *
+	 * @throws IOException If an IO exception occurs.
+	 */
 	public HtmlLandingPageFormatter(final Escaper escaper) throws IOException {
 		this.escaper = checkNotNull(escaper, "escaper cannot be null");
 

@@ -12,7 +12,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Class to generate the landing page for the repository.
+ * Class to generate the landing page for the repository. Instances should be created using
+ * {@link LandingPageGeneratorFactory}.
  */
 public class LandingPageGenerator {
 
@@ -27,7 +28,7 @@ public class LandingPageGenerator {
 	 * @param formatter The {@link LandingPageFormatter}. Cannot be {@code null}.
 	 * @param writer    The {@link LandingPageWriter}. Cannot be {@code null}.
 	 */
-	public LandingPageGenerator(final LandingPageFormatter formatter, final LandingPageWriter writer) {
+	LandingPageGenerator(final LandingPageFormatter formatter, final LandingPageWriter writer) {
 		this.formatter = checkNotNull(formatter, "formatter cannot be null");
 		this.writer = checkNotNull(writer, "writer cannot be null");
 	}

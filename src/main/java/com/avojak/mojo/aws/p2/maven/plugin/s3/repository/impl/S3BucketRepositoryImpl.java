@@ -7,7 +7,6 @@ import com.amazonaws.services.s3.model.HeadBucketResult;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.ObjectRequestCreationException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
@@ -19,6 +18,7 @@ import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.delete.DeleteObjec
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.head.HeadBucketRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.list.ListObjectsRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.put.PutObjectRequestFactory;
+import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,7 +105,7 @@ public class S3BucketRepositoryImpl implements S3BucketRepository {
 		checkNotNull(srcDir, "srcDir cannot be null");
 		checkNotNull(dest, "dest cannot be null");
 		final String prefix = getPrefix(dest.asString());
-		LOGGER.debug("Determined trie prefix: " + prefix);
+		LOGGER.debug(ResourceUtil.getString(getClass(), "debug.determinedTriePrefix"), prefix);
 		final Trie<String, String> content = prefix == null ? new BucketTrie() : new BucketTrie(prefix);
 		uploadDirectory(srcDir, dest, content);
 		return content;
@@ -208,30 +208,6 @@ public class S3BucketRepositoryImpl implements S3BucketRepository {
 			bucketRegion = headBucketResult.getBucketRegion();
 		}
 		return bucketRegion;
-	}
-
-//	@Override
-//	public Trie<String, String> getBucketContent(String prefix) {
-//		checkNotNull(prefix, "prefix cannot be null");
-//		final Trie<String, String> bucketTrie = new BucketTrie();
-//		final ObjectListing objectListing = client.listObjects(bucketName, prefix);
-//		for (final S3ObjectSummary summary : objectListing.getObjectSummaries()) {
-//			final String key = summary.getKey();
-//			if (isDirectory(summary)) {
-//				bucketTrie.insert(key, null);
-//			} else {
-//				bucketTrie.insert(key, getHostingUrl(key));
-//			}
-//		}
-//		return bucketTrie;
-//	}
-
-	/**
-	 * Returns whether or not the given {@link S3ObjectSummary} refers to a directory. A summary refers to a directory
-	 * created in the AWS web console if the size is 0B, and the key ends with a '/'.
-	 */
-	private boolean isDirectory(final S3ObjectSummary summary) {
-		return summary.getSize() == 0 && summary.getKey().endsWith("/");
 	}
 
 }

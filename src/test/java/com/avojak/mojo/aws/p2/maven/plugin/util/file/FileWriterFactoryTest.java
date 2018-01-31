@@ -16,7 +16,7 @@ public class FileWriterFactoryTest {
 
 	/**
 	 * Tests that {@link FileWriterFactory#create(File)} throws an exception when the given {@link File} is
-	 * \{@code null}.
+	 * {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testCreate_NullFile() {
@@ -29,7 +29,7 @@ public class FileWriterFactoryTest {
 	}
 
 	/**
-	 * Testst {@link FileWriterFactory#create(File)}.
+	 * Tests {@link FileWriterFactory#create(File)}.
 	 */
 	@Test
 	public void testCreate() {

@@ -297,7 +297,6 @@ public class S3BucketRepositoryImplTest {
 		final BucketPath destination = new BucketPath().append("repository");
 		when(putObjectRequestFactory.create(file, destination.asString())).thenReturn(putObjectRequest);
 		final String expectedKey = destination.asString();
-//		when(client.getUrl(bucketName, destination.asString())).thenReturn(expectedUrl);
 
 		final String key = repository.uploadFile(file, destination);
 
@@ -318,7 +317,6 @@ public class S3BucketRepositoryImplTest {
 		final BucketPath destination = new BucketPath().append("repository");
 		when(putObjectRequestFactory.create(file, destination.asString())).thenReturn(putObjectRequest);
 		final String expectedKey = destination.asString();
-//		when(client.getUrl(bucketName, destination.asString())).thenReturn(expectedUrl);
 
 		final String key = repository.uploadFile(file, destination);
 
@@ -358,8 +356,9 @@ public class S3BucketRepositoryImplTest {
 		final Trie<String, String> content = repository.uploadDirectory(directory, new BucketPath());
 
 		assertTrue(content.isEmpty());
-		assertThat(logger.getLoggingEvents(),
-				is(singletonList(warn("Directory is not accessible: {}", directory.getName()))));
+		final LoggingEvent event1 = debug("Determined trie prefix: {}", content.getPrefix());
+		final LoggingEvent event2 = warn("Directory is not accessible: {}", directory.getName());
+		assertThat(logger.getLoggingEvents(), is(asList(event1, event2)));
 		verify(client).doesBucketExist(bucketName);
 		verifyNoMoreInteractions(client);
 	}
@@ -375,8 +374,9 @@ public class S3BucketRepositoryImplTest {
 		final Trie<String, String> content = repository.uploadDirectory(directory, new BucketPath());
 
 		assertTrue(content.isEmpty());
-		assertThat(logger.getLoggingEvents(),
-				is(singletonList(warn("Directory is not accessible: {}", directory.getName()))));
+		final LoggingEvent event1 = debug("Determined trie prefix: {}", content.getPrefix());
+		final LoggingEvent event2 = warn("Directory is not accessible: {}", directory.getName());
+		assertThat(logger.getLoggingEvents(), is(asList(event1, event2)));
 		verify(client).doesBucketExist(bucketName);
 		verifyNoMoreInteractions(client);
 	}
@@ -397,8 +397,9 @@ public class S3BucketRepositoryImplTest {
 		verify(client).doesBucketExist(bucketName);
 		verifyNoMoreInteractions(client);
 
-		assertThat(logger.getLoggingEvents(),
-				is(singletonList(debug("Skipping upload of empty directory: {}", directory.getName()))));
+		final LoggingEvent event1 = debug("Determined trie prefix: {}", content.getPrefix());
+		final LoggingEvent event2 = debug("Skipping upload of empty directory: {}", directory.getName());
+		assertThat(logger.getLoggingEvents(), is(asList(event1, event2)));
 	}
 
 	/**
@@ -417,8 +418,9 @@ public class S3BucketRepositoryImplTest {
 		verify(client).doesBucketExist(bucketName);
 		verifyNoMoreInteractions(client);
 
-		assertThat(logger.getLoggingEvents(),
-				is(singletonList(debug("Skipping upload of empty directory: {}", directory.getName()))));
+		final LoggingEvent event1 = debug("Determined trie prefix: {}", content.getPrefix());
+		final LoggingEvent event2 = debug("Skipping upload of empty directory: {}", directory.getName());
+		assertThat(logger.getLoggingEvents(), is(asList(event1, event2)));
 	}
 
 	/**
@@ -431,18 +433,13 @@ public class S3BucketRepositoryImplTest {
 	public void testUploadDirectory_ChildDirectory() throws IOException {
 		final File parentDirectory = FileSystemTestUtil.createAccessibleDirectory();
 		FileSystemTestUtil.createAccessibleDirectory(parentDirectory.toPath());
-
 		final BucketPath parentDirectoryDestination = new BucketPath().append("repository");
-
 		final Trie<String, String> expectedContent = new BucketTrie();
-//		final URL expectedUrl = new URL("http", "example", "mock");
-//		when(client.getUrl(bucketName, parentDirectoryDestination.asString())).thenReturn(expectedUrl);
 
 		final Trie<String, String> content = repository.uploadDirectory(parentDirectory, parentDirectoryDestination);
 
 		assertEquals(expectedContent, content);
 		verify(client).doesBucketExist(bucketName);
-//		verify(client).getUrl(bucketName, parentDirectoryDestination.asString());
 		verifyNoMoreInteractions(client);
 	}
 
@@ -467,8 +464,6 @@ public class S3BucketRepositoryImplTest {
 		final String expectedUrl =
 				"http://" + bucketName + ".s3-website-" + bucketLocation + ".amazonaws.com/repository/" + file.getName();
 		expectedContent.insert(fileDestination.asString(), expectedUrl);
-//		final URL expectedUrl = new URL("http", "example", "mock");
-//		when(client.getUrl(bucketName, directoryDestination.asString())).thenReturn(expectedUrl);
 
 		final Trie<String, String> content = repository.uploadDirectory(directory, directoryDestination);
 
@@ -476,8 +471,6 @@ public class S3BucketRepositoryImplTest {
 		verify(client).doesBucketExist(bucketName);
 		verify(client).putObject(putObjectRequest);
 		verify(client).headBucket(headBucketRequest);
-//		verify(client).getUrl(bucketName, directoryDestination.asString());
-//		verify(client).getUrl(bucketName, fileDestination.asString());
 		verifyNoMoreInteractions(client);
 	}
 

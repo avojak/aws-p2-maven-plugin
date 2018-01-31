@@ -1,19 +1,14 @@
 package com.avojak.mojo.aws.p2.maven.plugin;
 
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.avojak.mojo.aws.p2.maven.plugin.index.formatter.HtmlLandingPageFormatter;
 import com.avojak.mojo.aws.p2.maven.plugin.index.generator.LandingPageGenerator;
-import com.avojak.mojo.aws.p2.maven.plugin.index.writer.HtmlLandingPageWriter;
-import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
+import com.avojak.mojo.aws.p2.maven.plugin.index.generator.LandingPageGeneratorFactory;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.AmazonS3ClientFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepository;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepositoryFactory;
-import com.avojak.mojo.aws.p2.maven.plugin.util.file.FileFactory;
-import com.avojak.mojo.aws.p2.maven.plugin.util.file.FileWriterFactory;
-import com.google.common.html.HtmlEscapers;
+import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -40,14 +35,10 @@ public class AWSP2Mojo extends AbstractMojo {
 	private static final String SNAPSHOT_DIR = "snapshot";
 	private static final String RELEASE_DIR = "release";
 
-	// Attempt to use an arbitrary default region for creating the client, even if it's incorrect.
-	// See: https://github.com/aws/aws-sdk-java/issues/1142#issuecomment-300308009
-	private static final String DEFAULT_REGION = "us-east-1";
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(AWSP2Mojo.class);
 
 	private final S3BucketRepositoryFactory repositoryFactory;
-	private final LandingPageGenerator landingPageGenerator;
+	private final LandingPageGeneratorFactory landingPageGeneratorFactory;
 
 	/**
 	 * The name of the S3 bucket to host the p2 site.
@@ -127,13 +118,8 @@ public class AWSP2Mojo extends AbstractMojo {
 	/**
 	 * Default constructor invoked at runtime.
 	 */
-	public AWSP2Mojo() throws IOException {
-		this(new S3BucketRepositoryFactory(AmazonS3ClientBuilder.standard().withRegion(DEFAULT_REGION)
-						.withForceGlobalBucketAccessEnabled(true)
-						.withCredentials(new DefaultAWSCredentialsProviderChain())
-						.build()),
-				new LandingPageGenerator(new HtmlLandingPageFormatter(HtmlEscapers.htmlEscaper()),
-						new HtmlLandingPageWriter(new FileFactory(), new FileWriterFactory())));
+	public AWSP2Mojo() {
+		this(new S3BucketRepositoryFactory(new AmazonS3ClientFactory().create()), new LandingPageGeneratorFactory());
 	}
 
 	/**
@@ -141,12 +127,12 @@ public class AWSP2Mojo extends AbstractMojo {
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
 	 *
-	 * @param repositoryFactory    The {@link S3BucketRepositoryFactory}.
-	 * @param landingPageGenerator
+	 * @param repositoryFactory           The {@link S3BucketRepositoryFactory}.
+	 * @param landingPageGeneratorFactory The {@link LandingPageGeneratorFactory}.
 	 */
-	AWSP2Mojo(final S3BucketRepositoryFactory repositoryFactory, final LandingPageGenerator landingPageGenerator) {
+	AWSP2Mojo(final S3BucketRepositoryFactory repositoryFactory, final LandingPageGeneratorFactory landingPageGeneratorFactory) {
 		this.repositoryFactory = repositoryFactory;
-		this.landingPageGenerator = landingPageGenerator;
+		this.landingPageGeneratorFactory = landingPageGeneratorFactory;
 	}
 
 	/**
@@ -194,10 +180,11 @@ public class AWSP2Mojo extends AbstractMojo {
 		if (generateLandingPage) {
 			try {
 				final BucketPath landingPageDestination = new BucketPath(destination).append("index.html");
+				final LandingPageGenerator landingPageGenerator = landingPageGeneratorFactory.create();
 				final File index = landingPageGenerator.generate(bucket, project.getArtifactId(), content, new Date());
 				repository.uploadFile(index, landingPageDestination);
 			} catch (IOException e) {
-				throw new MojoFailureException("Unable to write landing page", e);
+				throw new MojoFailureException("Unable to generate landing page", e);
 			}
 		}
 
