@@ -1,7 +1,7 @@
 # AWS p2 Maven Plugin (aws-p2-maven-plugin)
 
 [![Build Status](https://travis-ci.org/avojak/aws-p2-maven-plugin.svg?branch=master)](https://travis-ci.org/avojak/aws-p2-maven-plugin) 
-[![Coverage Status](https://coveralls.io/repos/github/avojak/aws-p2-maven-plugin/badge.svg?branch=initial-impl)](https://coveralls.io/github/avojak/aws-p2-maven-plugin?branch=initial-impl) 
+[![Coverage Status](https://coveralls.io/repos/github/avojak/aws-p2-maven-plugin/badge.svg?branch=master)](https://coveralls.io/github/avojak/aws-p2-maven-plugin?branch=master) 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/EPL-1.0) 
 ![Version](https://img.shields.io/badge/version-1.0--SNAPSHOT-yellow.svg)
 
