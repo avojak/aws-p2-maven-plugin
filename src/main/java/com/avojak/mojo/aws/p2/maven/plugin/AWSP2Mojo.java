@@ -1,14 +1,15 @@
 package com.avojak.mojo.aws.p2.maven.plugin;
 
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.avojak.mojo.aws.p2.maven.plugin.resource.ResourceUtil;
+import com.avojak.mojo.aws.p2.maven.plugin.index.generator.LandingPageGenerator;
+import com.avojak.mojo.aws.p2.maven.plugin.index.generator.LandingPageGeneratorFactory;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.AmazonS3ClientFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepository;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepositoryFactory;
+import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -18,7 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.net.URL;
+import java.io.IOException;
+import java.util.Date;
 
 /**
  * Deploys a p2 update site to an AWS S3 bucket.
@@ -36,6 +38,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AWSP2Mojo.class);
 
 	private final S3BucketRepositoryFactory repositoryFactory;
+	private final LandingPageGeneratorFactory landingPageGeneratorFactory;
 
 	/**
 	 * The name of the S3 bucket to host the p2 site.
@@ -48,10 +51,10 @@ public class AWSP2Mojo extends AbstractMojo {
 	/**
 	 * The directory within the bucket where the site will be placed. The default location is:
 	 * <pre>
-	 *     ${project.name}/${project.version}
+	 *     ${project.artifactId}/${project.version}
 	 * </pre>
 	 */
-	@Parameter(name = "targetSiteDirectory", property = "aws-p2.targetSiteDirectory", defaultValue = "${project.name}/${project.version}")
+	@Parameter(name = "targetSiteDirectory", property = "aws-p2.targetSiteDirectory", defaultValue = "${project.artifactId}/${project.version}")
 	private String targetSiteDirectory;
 
 	/**
@@ -84,6 +87,13 @@ public class AWSP2Mojo extends AbstractMojo {
 	private boolean dedicatedBuckets;
 
 	/**
+	 * Whether or not to write a web-accessible landing page for the update site. If {@code true}, the HTML landing
+	 * page will be created and uploaded into the root of the update site.
+	 */
+	@Parameter(name = "generateLandingPage", property = "aws-p2.generateLandingPage", defaultValue = "true")
+	private boolean generateLandingPage;
+
+	/**
 	 * The top level output directory of the build. The default value is:
 	 * <pre>
 	 *     ${project.build.directory}
@@ -105,13 +115,11 @@ public class AWSP2Mojo extends AbstractMojo {
 
 	// TODO: Allow additional metadata for putObject call?
 
-	// TODO: Create index.html page at root?
-
 	/**
 	 * Default constructor invoked at runtime.
 	 */
 	public AWSP2Mojo() {
-		this(new S3BucketRepositoryFactory(new AmazonS3Client(new DefaultAWSCredentialsProviderChain())));
+		this(new S3BucketRepositoryFactory(new AmazonS3ClientFactory().create()), new LandingPageGeneratorFactory());
 	}
 
 	/**
@@ -119,17 +127,19 @@ public class AWSP2Mojo extends AbstractMojo {
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
 	 *
-	 * @param repositoryFactory The {@link S3BucketRepositoryFactory}.
+	 * @param repositoryFactory           The {@link S3BucketRepositoryFactory}.
+	 * @param landingPageGeneratorFactory The {@link LandingPageGeneratorFactory}.
 	 */
-	AWSP2Mojo(final S3BucketRepositoryFactory repositoryFactory) {
+	AWSP2Mojo(final S3BucketRepositoryFactory repositoryFactory, final LandingPageGeneratorFactory landingPageGeneratorFactory) {
 		this.repositoryFactory = repositoryFactory;
+		this.landingPageGeneratorFactory = landingPageGeneratorFactory;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void execute() throws MojoExecutionException, MojoFailureException {
+	public void execute() throws MojoFailureException {
 		if (skip) {
 			LOGGER.info(ResourceUtil.getString(getClass(), "info.skippingExecution"));
 			return;
@@ -160,10 +170,26 @@ public class AWSP2Mojo extends AbstractMojo {
 		}
 
 		destination.append(targetSiteDirectory);
-		final URL url = repository.uploadDirectory(repositoryDirectory, destination);
-		if (url != null) {
-			LOGGER.info(ResourceUtil.getString(getClass(), "info.uploadComplete"), url.toString());
+
+		repository.deleteDirectory(destination.asString());
+		final Trie<String, String> content = repository.uploadDirectory(repositoryDirectory, destination);
+		// TODO: Log a message before this
+		content.log();
+
+		// Generate an HTML landing page if specified
+		if (generateLandingPage) {
+			try {
+				final BucketPath landingPageDestination = new BucketPath(destination).append("index.html");
+				final LandingPageGenerator landingPageGenerator = landingPageGeneratorFactory.create();
+				final File index = landingPageGenerator.generate(bucket, project.getArtifactId(), content, new Date());
+				repository.uploadFile(index, landingPageDestination);
+			} catch (IOException e) {
+				throw new MojoFailureException("Unable to generate landing page", e);
+			}
 		}
+
+		final String url = repository.getHostingUrl(destination.asString());
+		LOGGER.info(ResourceUtil.getString(getClass(), "info.uploadComplete"), url);
 	}
 
 	/**
@@ -238,6 +264,17 @@ public class AWSP2Mojo extends AbstractMojo {
 	 */
 	void setDedicatedBuckets(final boolean dedicatedBuckets) {
 		this.dedicatedBuckets = dedicatedBuckets;
+	}
+
+	/**
+	 * Sets the write landing page flag.
+	 * <p>
+	 * <em>Package-private scoped for testing purposes.</em>
+	 *
+	 * @param generateLandingPage The write landing page flag.
+	 */
+	void setGenerateLandingPage(final boolean generateLandingPage) {
+		this.generateLandingPage = generateLandingPage;
 	}
 
 	/**

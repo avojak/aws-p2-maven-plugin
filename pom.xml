@@ -31,6 +31,11 @@
             <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>23.0</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-core</artifactId>
             <version>${maven.version}</version>
@@ -75,6 +80,14 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -151,7 +164,13 @@
                         <!-- Exclude the HelpMojo -->
                         <exclude>**/HelpMojo.*</exclude>
                         <!-- Exclude factories not intended to be tested -->
+                        <exclude>**/AmazonS3ClientFactory.*</exclude>
+                        <exclude>**/LandingPageGeneratorFactory.*</exclude>
                         <exclude>**/S3BucketRepositoryFactory.*</exclude>
+                        <!-- Exclude interfaces -->
+                        <exclude>**/S3BucketRepository.*</exclude>
+                        <!-- Exclude classes which cannot be tested -->
+                        <exclude>**/SystemOutTriePrinter.*</exclude>
                     </excludes>
                 </configuration>
             </plugin>

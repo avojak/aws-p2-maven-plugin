@@ -1,4 +1,4 @@
-package com.avojak.mojo.aws.p2.maven.plugin.resource;
+package com.avojak.mojo.aws.p2.maven.plugin.util.resource;
 
 import java.util.ResourceBundle;
 
@@ -23,6 +23,7 @@ public class ResourceUtil {
 	 * @throws java.util.MissingResourceException if no resource for the given key can be found.
 	 */
 	public static String getString(final Class clazz, final String key) {
+		checkNotNull(clazz, "clazz cannot be null");
 		checkNotNull(key, "key cannot be null");
 		checkArgument(!key.trim().isEmpty(), "key cannot be empty");
 		final ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE);

@@ -1,59 +1,17 @@
 package com.avojak.mojo.aws.p2.maven.plugin.s3.repository;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.avojak.mojo.aws.p2.maven.plugin.resource.ResourceUtil;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.ObjectRequestCreationException;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.delete.DeleteObjectRequestFactory;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.put.PutObjectRequestFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
 
 import java.io.File;
-import java.net.URL;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.List;
 
 /**
- * Repository class to wrap an {@link AmazonS3} bucket. Instances should be created with {@link
- * S3BucketRepositoryFactory}.
+ * Provides methods to interface with an S3 Bucket in a repository pattern.
  */
-public class S3BucketRepository {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(S3BucketRepository.class);
-
-	private final AmazonS3 client;
-	private final String bucketName;
-	private final PutObjectRequestFactory putObjectRequestFactory;
-	private final DeleteObjectRequestFactory deleteObjectRequestFactory;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param client                     The {@link AmazonS3} client. Cannot be {@code null}.
-	 * @param bucketName                 The name of the bucket that this repository represents. Cannot be {@code null}
-	 *                                   or empty.
-	 * @param putObjectRequestFactory    The {@link PutObjectRequestFactory} for {@link File files}. Cannot be {@code
-	 *                                   null}.
-	 * @param deleteObjectRequestFactory The {@link DeleteObjectRequestFactory}. Cannot be {@code null}.
-	 *
-	 * @throws BucketDoesNotExistException if the specified bucketName does not refer to an existing bucket.
-	 */
-	S3BucketRepository(final AmazonS3 client, final String bucketName,
-			final PutObjectRequestFactory putObjectRequestFactory,
-			final DeleteObjectRequestFactory deleteObjectRequestFactory) throws BucketDoesNotExistException {
-		this.client = checkNotNull(client, "client cannot be null");
-		this.bucketName = checkNotNull(bucketName, "bucketName cannot be null");
-		checkArgument(!bucketName.trim().isEmpty(), "bucketName cannot be empty");
-		this.putObjectRequestFactory = checkNotNull(putObjectRequestFactory, "putObjectRequestFactory cannot be null");
-		this.deleteObjectRequestFactory = checkNotNull(deleteObjectRequestFactory,
-				"deleteObjectRequestFactory cannot be null");
-		if (!client.doesBucketExist(bucketName)) {
-			throw new BucketDoesNotExistException(bucketName);
-		}
-	}
+public interface S3BucketRepository {
 
 	/**
 	 * Uploads a file into the given location in the bucket. The destination path should refer to the desired name of
@@ -67,32 +25,14 @@ public class S3BucketRepository {
 	 * The destination path need not exist in the bucket prior to calling this method. Any non-existent folders will be
 	 * created as needed.
 	 * <p>
-	 * In the event that a file at the same destination path already exists, that file will be deleted and replaced with
-	 * the given file.
+	 * In the event that a file at the same destination path already exists, that file will be overwritten.
 	 *
 	 * @param src  The source {@link File} to upload. Cannot be {@code null}.
 	 * @param dest The destination {@link BucketPath} location within the bucket. Cannot be {@code null}.
 	 *
-	 * @return The {@link URL} of the file which was uploaded, or {@code null} if no file was uploaded.
+	 * @return The {@link String} key of the file which was uploaded, or {@code null} if no file was uploaded.
 	 */
-	public URL uploadFile(final File src, final BucketPath dest) {
-		checkNotNull(src, "src cannot be null");
-		checkNotNull(dest, "dest cannot be null");
-		if (!isAccessible(src) || !src.isFile()) {
-			LOGGER.warn(ResourceUtil.getString(getClass(), "warn.fileNotAccessible"), src.getName());
-			return null;
-		}
-		final String key = dest.asString();
-		deleteExistingObjectIfExists(key);
-		try {
-			LOGGER.debug(ResourceUtil.getString(getClass(), "debug.uploadingFile"), key);
-			client.putObject(putObjectRequestFactory.create(src, key));
-		} catch (final ObjectRequestCreationException e) {
-			LOGGER.error(ResourceUtil.getString(getClass(), "error.failedUploadRequestCreation"), e);
-			return null;
-		}
-		return client.getUrl(bucketName, key);
-	}
+	String uploadFile(final File src, final BucketPath dest);
 
 	/**
 	 * Uploads a directory and its contents into the given location in the bucket. The destination path should refer to
@@ -106,55 +46,43 @@ public class S3BucketRepository {
 	 * The destination path need not exist in the bucket prior to calling this method. Any non-existent folders will be
 	 * created as needed.
 	 * <p>
-	 * In the event that a folder at the same destination path already exists, that folder will be deleted and replaced
-	 * with the given directory.
+	 * In the event that a folder at the same destination path already exists, files with matching names will be
+	 * overwritten, and all other files will be left unchanged.
 	 * <p>
 	 * Empty directories will be ignored.
 	 *
 	 * @param srcDir The source directory {@link File} to upload. Cannot be {@code null}.
 	 * @param dest   The destination {@link BucketPath} location within the bucket. Cannot be {@code null}.
 	 *
-	 * @return The {@link URL} of the directory which was uploaded, or {@code null} if no directory was uploaded.
+	 * @return A non-{@link null}, possibly empty {@link Trie} of the directory which was uploaded.
 	 */
-	public URL uploadDirectory(final File srcDir, final BucketPath dest) {
-		checkNotNull(srcDir, "srcDir cannot be null");
-		checkNotNull(dest, "dest cannot be null");
-		if (!isAccessible(srcDir) || !srcDir.isDirectory()) {
-			LOGGER.warn(ResourceUtil.getString(getClass(), "warn.directoryNotAccessible"), srcDir.getName());
-			return null;
-		}
-		final String key = dest.asString();
-		deleteExistingObjectIfExists(key);
-		final File[] directoryContents = srcDir.listFiles();
-		if (directoryContents == null) {
-			// Should never happen, since we already verify that srcDir is a directory
-			LOGGER.warn(ResourceUtil.getString(getClass(), "warn.directoryContentsNull"), srcDir.getName());
-			return null;
-		}
-		if (directoryContents.length == 0) {
-			LOGGER.debug(ResourceUtil.getString(getClass(), "debug.skippingEmptyDirectory"), srcDir.getName());
-			return null;
-		}
-		for (final File file : directoryContents) {
-			if (file.isFile()) {
-				uploadFile(file, new BucketPath(dest).append(file.getName()));
-			} else if (file.isDirectory()) {
-				uploadDirectory(file, new BucketPath(dest).append(file.getName()));
-			}
-		}
-		return client.getUrl(bucketName, key);
-	}
+	Trie<String, String> uploadDirectory(final File srcDir, final BucketPath dest);
 
-	private boolean isAccessible(final File file) {
-		return file.exists() && file.canRead();
-	}
+	/**
+	 * Deletes a "directory" at the given prefix. As there are no actual directories in S3, this method deletes all
+	 * objects whose key matches the given prefix.
+	 * <p>
+	 * There is no consequence for attempting to delete non-existent objects.
+	 *
+	 * @param prefix The key prefix. Cannot be {@code null} or empty.
+	 */
+	void deleteDirectory(final String prefix);
 
-	// TODO: Explicitly declare the exceptions thrown by the AmazonS3 client?
-	private void deleteExistingObjectIfExists(final String key) {
-		if (client.doesObjectExist(bucketName, key)) {
-			LOGGER.debug(ResourceUtil.getString(getClass(), "debug.deleteExistingObject"), key);
-			client.deleteObject(deleteObjectRequestFactory.create(key));
-		}
-	}
+	/**
+	 * Enumerates all {@link S3Object} objects behind the given prefix.
+	 *
+	 * @param prefix The {@link S3Object} prefix {@code String}. Cannot be {@code null} or empty.
+	 *
+	 * @return The non-{@code null}, possibly empty {@link List} of {@link S3Object} objects.
+	 */
+	List<S3ObjectSummary> enumerate(final String prefix);
+
+	/**
+	 * Gets the AWS static website hosting URL for the object with the given key. If no key is provided, the URL
+	 * returned will point to the root of the bucket.
+	 *
+	 * @return The static website hosting URL for the given object key, or the root of the bucket if no key is provided.
+	 */
+	String getHostingUrl(final String key);
 
 }

@@ -3,6 +3,7 @@ package com.avojak.mojo.aws.p2.maven.plugin.s3.model;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Test class for {@link BucketPath}.
@@ -88,6 +89,44 @@ public class BucketPathTest {
 	@Test
 	public void testAsString() {
 		assertEquals("mock", new BucketPath().append("mock").asString());
+	}
+
+	/**
+	 * Tests {@link BucketPath#equals(Object)}.
+	 */
+	@Test
+	public void testEquals() {
+		final BucketPath bucketPath1 = new BucketPath();
+		final BucketPath bucketPath2 = new BucketPath();
+		final BucketPath bucketPath3 = new BucketPath().append("path");
+
+		assertEquals(bucketPath1, bucketPath1);
+		assertEquals(bucketPath1, bucketPath2);
+		assertNotEquals(bucketPath1, null);
+		assertNotEquals(bucketPath1, "String");
+		assertNotEquals(bucketPath1, bucketPath3);
+	}
+
+	/**
+	 * Tests {@link BucketPath#hashCode()}.
+	 */
+	@Test
+	public void testHashcode() {
+		final BucketPath bucketPath1 = new BucketPath();
+		final BucketPath bucketPath2 = new BucketPath().append("path");
+
+		assertEquals(bucketPath1.hashCode(), bucketPath1.hashCode());
+		assertNotEquals(bucketPath1.hashCode(), bucketPath2.hashCode());
+	}
+
+	/**
+	 * Tests {@link BucketPath#toString()}.
+	 */
+	@Test
+	public void testToString() {
+		final BucketPath bucketPath = new BucketPath().append("path");
+		final String expected = "BucketPath{path}";
+		assertEquals(expected, bucketPath.toString());
 	}
 
 }

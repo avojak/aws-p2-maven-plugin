@@ -8,7 +8,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class BucketPath {
 
-	private static final char PATH_DELIM = '/';
+	public static final char PATH_DELIM = '/';
 
 	private final StringBuilder stringBuilder;
 

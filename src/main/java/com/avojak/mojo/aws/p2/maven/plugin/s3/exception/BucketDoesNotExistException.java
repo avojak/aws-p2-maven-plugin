@@ -1,6 +1,6 @@
 package com.avojak.mojo.aws.p2.maven.plugin.s3.exception;
 
-import com.avojak.mojo.aws.p2.maven.plugin.resource.ResourceUtil;
+import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 
 import java.text.MessageFormat;
 
