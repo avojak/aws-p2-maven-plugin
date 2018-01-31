@@ -207,7 +207,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	 *
 	 * @param project The {@link MavenProject}.
 	 */
-	void setProject(final MavenProject project) {
+	protected void setProject(final MavenProject project) {
 		this.project = project;
 	}
 
@@ -218,7 +218,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	 *
 	 * @param bucket The bucket name.
 	 */
-	void setBucket(final String bucket) {
+	protected void setBucket(final String bucket) {
 		this.bucket = bucket;
 	}
 
@@ -229,7 +229,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	 *
 	 * @param targetSiteDirectory The target site directory.
 	 */
-	void setTargetSiteDirectory(final String targetSiteDirectory) {
+	protected void setTargetSiteDirectory(final String targetSiteDirectory) {
 		this.targetSiteDirectory = targetSiteDirectory;
 	}
 
@@ -240,7 +240,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	 *
 	 * @param deploySnapshots The deploy snapshots flag.
 	 */
-	void setDeploySnapshots(final boolean deploySnapshots) {
+	protected void setDeploySnapshots(final boolean deploySnapshots) {
 		this.deploySnapshots = deploySnapshots;
 	}
 
@@ -251,7 +251,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	 *
 	 * @param skip The skip execution flag.
 	 */
-	void setSkip(final boolean skip) {
+	protected void setSkip(final boolean skip) {
 		this.skip = skip;
 	}
 
@@ -262,7 +262,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	 *
 	 * @param dedicatedBuckets The dedicated buckets flag.
 	 */
-	void setDedicatedBuckets(final boolean dedicatedBuckets) {
+	protected void setDedicatedBuckets(final boolean dedicatedBuckets) {
 		this.dedicatedBuckets = dedicatedBuckets;
 	}
 
@@ -273,7 +273,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	 *
 	 * @param generateLandingPage The write landing page flag.
 	 */
-	void setGenerateLandingPage(final boolean generateLandingPage) {
+	protected void setGenerateLandingPage(final boolean generateLandingPage) {
 		this.generateLandingPage = generateLandingPage;
 	}
 
@@ -284,7 +284,7 @@ public class AWSP2Mojo extends AbstractMojo {
 	 *
 	 * @param outputDirectory The output directory {@link File}.
 	 */
-	void setOutputDirectory(final File outputDirectory) {
+	protected void setOutputDirectory(final File outputDirectory) {
 		this.outputDirectory = outputDirectory;
 	}
 

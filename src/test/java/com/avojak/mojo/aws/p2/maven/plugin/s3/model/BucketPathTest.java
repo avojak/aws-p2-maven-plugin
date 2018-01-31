@@ -23,7 +23,7 @@ public class BucketPathTest {
 	 * {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testDeepCopyConstructor_NullPath() {
+	public void testDeepCopyConstructorNullPath() {
 		new BucketPath(null);
 	}
 

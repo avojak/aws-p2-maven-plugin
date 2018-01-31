@@ -63,7 +63,7 @@ public class HtmlLandingPageFormatterTest {
 	 * bucket name is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testForma_NullBucketName() {
+	public void testFormatNullBucketName() {
 		htmlLandingPageFormatter.format(null, projectName, content, date);
 	}
 
