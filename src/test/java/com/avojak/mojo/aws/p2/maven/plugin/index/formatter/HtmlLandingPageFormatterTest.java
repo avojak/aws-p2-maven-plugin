@@ -1,7 +1,7 @@
 package com.avojak.mojo.aws.p2.maven.plugin.index.formatter;
 
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl.BucketTrie;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl.BucketTrieFactory;
 import com.google.common.base.Charsets;
 import com.google.common.escape.Escaper;
 import com.google.common.io.Resources;
@@ -31,7 +31,7 @@ public class HtmlLandingPageFormatterTest {
 	// Careful modifying these values - the HTML test resources depend on them
 	private final String bucketName = "p2.example.com";
 	private final String projectName = "example-project";
-	private final Trie<String, String> content = new BucketTrie();
+	private final Trie<String, String> content = new BucketTrieFactory().create();
 	private final Date date = new GregorianCalendar(2018, 0, 26, 14, 14, 17).getTime();
 
 	private HtmlLandingPageFormatter htmlLandingPageFormatter;

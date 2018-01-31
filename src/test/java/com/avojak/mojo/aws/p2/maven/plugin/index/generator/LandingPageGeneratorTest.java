@@ -3,7 +3,7 @@ package com.avojak.mojo.aws.p2.maven.plugin.index.generator;
 import com.avojak.mojo.aws.p2.maven.plugin.index.formatter.LandingPageFormatter;
 import com.avojak.mojo.aws.p2.maven.plugin.index.writer.LandingPageWriter;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl.BucketTrie;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl.BucketTrieFactory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +32,7 @@ public class LandingPageGeneratorTest {
 
 	private final String bucketName = "p2.example.com";
 	private final String projectName = "example-project";
-	private final Trie<String, String> content = new BucketTrie();
+	private final Trie<String, String> content = new BucketTrieFactory().create();
 	private final Date date = new Date();
 
 	private LandingPageGenerator landingPageGenerator;

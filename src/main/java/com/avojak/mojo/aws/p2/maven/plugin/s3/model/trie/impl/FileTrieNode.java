@@ -42,12 +42,12 @@ public class FileTrieNode implements TrieNode<String> {
 
 		FileTrieNode that = (FileTrieNode) o;
 
-		return value != null ? value.equals(that.value) : that.value == null;
+		return value.equals(that.value);
 	}
 
 	@Override
 	public int hashCode() {
-		return value != null ? value.hashCode() : 0;
+		return value.hashCode();
 	}
 
 	@Override

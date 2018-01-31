@@ -3,8 +3,6 @@ package com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.TrieNode;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.printer.TriePrinter;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.printer.impl.DebugLogTriePrinter;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.printer.impl.SystemOutTriePrinter;
 import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import com.google.common.base.Optional;
 import org.slf4j.Logger;
@@ -29,25 +27,21 @@ public class BucketTrie implements Trie<String, String> {
 
 	private final TrieNode<String> root;
 	private final String prefix;
-
-	/**
-	 * Constructor.
-	 */
-	public BucketTrie() {
-		this.root = new DirectoryTrieNode();
-		this.prefix = null;
-	}
+	private final TriePrinter systemPrinter;
+	private final TriePrinter loggerPrinter;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param prefix The prefix for the trie content. Cannot be null or empty.
+	 * @param prefix        The prefix for the trie content.
+	 * @param systemPrinter The {@link TriePrinter} for printing to {@link System} output. Cannot be {@code null}.
+	 * @param loggerPrinter The {@link TriePrinter} for printing to {@link Logger} output. Cannot be {@code null}.
 	 */
-	public BucketTrie(final String prefix) {
-		checkNotNull(prefix, "prefix cannot be null");
-		checkArgument(!prefix.trim().isEmpty(), "prefix cannot be empty");
+	BucketTrie(final String prefix, final TriePrinter systemPrinter, final TriePrinter loggerPrinter) {
 		this.root = new DirectoryTrieNode();
 		this.prefix = prefix;
+		this.systemPrinter = checkNotNull(systemPrinter, "systemPrinter cannot be null");
+		this.loggerPrinter = checkNotNull(loggerPrinter, "loggerPrinter cannot be null");
 	}
 
 	@Override
@@ -105,12 +99,12 @@ public class BucketTrie implements Trie<String, String> {
 
 	@Override
 	public void print() {
-		outputChildren("", root, new SystemOutTriePrinter());
+		outputChildren("", root, systemPrinter);
 	}
 
 	@Override
 	public void log() {
-		outputChildren("", root, new DebugLogTriePrinter(LOGGER));
+		outputChildren("", root, loggerPrinter);
 	}
 
 	/**

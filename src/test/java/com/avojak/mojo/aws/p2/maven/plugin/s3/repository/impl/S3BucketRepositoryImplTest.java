@@ -13,7 +13,7 @@ import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistExcept
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.ObjectRequestCreationException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl.BucketTrie;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl.BucketTrieFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.delete.DeleteObjectRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.head.HeadBucketRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.list.ListObjectsRequestFactory;
@@ -93,6 +93,7 @@ public class S3BucketRepositoryImplTest {
 
 	private final String bucketName = "mock";
 	private final String bucketLocation = "us-east-1";
+	private BucketTrieFactory bucketTrieFactory = new BucketTrieFactory();
 
 	private S3BucketRepositoryImpl repository;
 
@@ -105,7 +106,7 @@ public class S3BucketRepositoryImplTest {
 	public void setup() throws BucketDoesNotExistException {
 		when(client.doesBucketExist(bucketName)).thenReturn(true);
 		repository = new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
-				listObjectsRequestFactory, headBucketRequestFactory);
+				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
 
 	/**
@@ -124,7 +125,7 @@ public class S3BucketRepositoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testConstructor_NullClient() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(null, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
-				listObjectsRequestFactory, headBucketRequestFactory);
+				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
 
 	/**
@@ -135,7 +136,7 @@ public class S3BucketRepositoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testConstructor_NullBucketName() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, null, putObjectRequestFactory, deleteObjectRequestFactory,
-				listObjectsRequestFactory, headBucketRequestFactory);
+				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
 
 	/**
@@ -146,7 +147,7 @@ public class S3BucketRepositoryImplTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testConstructor_EmptyBucketName() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, " ", putObjectRequestFactory, deleteObjectRequestFactory,
-				listObjectsRequestFactory, headBucketRequestFactory);
+				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
 
 	/**
@@ -157,43 +158,51 @@ public class S3BucketRepositoryImplTest {
 	@Test(expected = NullPointerException.class)
 	public void testConstructor_NullPutObjectRequestFactory() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, bucketName, null, deleteObjectRequestFactory,
-				listObjectsRequestFactory, headBucketRequestFactory);
+				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
 
 	/**
-	 * Tests that the constructor throws an exception when the given {@link DeleteObjectRequestFactory} is {@code
-	 * null}.
+	 * Tests that the constructor throws an exception when the given {@link DeleteObjectRequestFactory} is {@code null}.
 	 *
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testConstructor_NullDeleteObjectRequestFactory() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, null,
-				listObjectsRequestFactory, headBucketRequestFactory);
+				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
 
 	/**
-	 * Tests that the constructor throws an exception when the given {@link ListObjectsRequestFactory} is {@code
-	 * null}.
+	 * Tests that the constructor throws an exception when the given {@link ListObjectsRequestFactory} is {@code null}.
 	 *
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testConstructor_NullListObjectsRequestFactory() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory, null,
-				headBucketRequestFactory);
+				headBucketRequestFactory, bucketTrieFactory);
 	}
 
 	/**
-	 * Tests that the constructor throws an exception when the given {@link HeadBucketRequestFactory} is {@code
-	 * null}.
+	 * Tests that the constructor throws an exception when the given {@link HeadBucketRequestFactory} is {@code null}.
 	 *
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
 	public void testConstructor_NullHeadBucketRequestFactory() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
-				listObjectsRequestFactory, null);
+				listObjectsRequestFactory, null, bucketTrieFactory);
+	}
+
+	/**
+	 * Tests that the constructor throws an exception when the given {@link BucketTrieFactory} is {@cod null}.
+	 *
+	 * @throws BucketDoesNotExistException Unexpected.
+	 */
+	@Test(expected = NullPointerException.class)
+	public void testConstructor_NullBucketTrieFactory() throws BucketDoesNotExistException {
+		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
+				listObjectsRequestFactory, headBucketRequestFactory, null);
 	}
 
 	/**
@@ -205,7 +214,7 @@ public class S3BucketRepositoryImplTest {
 	public void testConstructor_BucketDoesNotExist() throws BucketDoesNotExistException {
 		when(client.doesBucketExist(bucketName)).thenReturn(false);
 		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
-				listObjectsRequestFactory, headBucketRequestFactory);
+				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
 
 	/**
@@ -434,7 +443,7 @@ public class S3BucketRepositoryImplTest {
 		final File parentDirectory = FileSystemTestUtil.createAccessibleDirectory();
 		FileSystemTestUtil.createAccessibleDirectory(parentDirectory.toPath());
 		final BucketPath parentDirectoryDestination = new BucketPath().append("repository");
-		final Trie<String, String> expectedContent = new BucketTrie();
+		final Trie<String, String> expectedContent = new BucketTrieFactory().create();
 
 		final Trie<String, String> content = repository.uploadDirectory(parentDirectory, parentDirectoryDestination);
 
@@ -460,7 +469,7 @@ public class S3BucketRepositoryImplTest {
 		when(headBucketRequestFactory.create()).thenReturn(headBucketRequest);
 		when(client.headBucket(headBucketRequest)).thenReturn(headBucketResult);
 		when(headBucketResult.getBucketRegion()).thenReturn(bucketLocation);
-		final Trie<String, String> expectedContent = new BucketTrie();
+		final Trie<String, String> expectedContent = new BucketTrieFactory().create();
 		final String expectedUrl =
 				"http://" + bucketName + ".s3-website-" + bucketLocation + ".amazonaws.com/repository/" + file.getName();
 		expectedContent.insert(fileDestination.asString(), expectedUrl);

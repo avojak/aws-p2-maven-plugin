@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -46,6 +47,44 @@ public class FileTrieNodeTest {
 	@Test
 	public void testGetChildren() {
 		assertEquals(Collections.emptyMap(), new FileTrieNode("value").getChildren());
+	}
+
+	/**
+	 * Tests {@link FileTrieNode#equals(Object)}.
+	 */
+	@Test
+	public void testEquals() {
+		final TrieNode<String> node1 = new FileTrieNode("value");
+		final TrieNode<String> node2 = new FileTrieNode("value");
+		final TrieNode<String> node3 = new FileTrieNode("other");
+
+		assertEquals(node1, node1);
+		assertEquals(node1, node2);
+		assertNotEquals(node1, null);
+		assertNotEquals(node1, "String");
+		assertNotEquals(node1, node3);
+	}
+
+	/**
+	 * Tests {@link FileTrieNode#hashCode()}.
+	 */
+	@Test
+	public void testHashcode() {
+		final TrieNode<String> node1 = new FileTrieNode("value");
+		final TrieNode<String> node2 = new FileTrieNode("other");
+
+		assertEquals(node1.hashCode(), node1.hashCode());
+		assertNotEquals(node1.hashCode(), node2.hashCode());
+	}
+
+	/**
+	 * Tests {@link FileTrieNode#toString()}.
+	 */
+	@Test
+	public void testToString() {
+		final TrieNode<String> node = new FileTrieNode("value");
+		final String expected = "FileTrieNode{value='value'}";
+		assertEquals(expected, node.toString());
 	}
 
 }

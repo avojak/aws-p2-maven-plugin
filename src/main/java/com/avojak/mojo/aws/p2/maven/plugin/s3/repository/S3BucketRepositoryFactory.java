@@ -2,6 +2,7 @@ package com.avojak.mojo.aws.p2.maven.plugin.s3.repository;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistException;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl.BucketTrieFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.impl.S3BucketRepositoryImpl;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.delete.DeleteObjectRequestFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.head.HeadBucketRequestFactory;
@@ -40,8 +41,9 @@ public class S3BucketRepositoryFactory {
 		final DeleteObjectRequestFactory deleteObjectRequestFactory = new DeleteObjectRequestFactory(bucketName);
 		final ListObjectsRequestFactory listObjectsRequestFactory = new ListObjectsRequestFactory(bucketName);
 		final HeadBucketRequestFactory headBucketRequestFactory = new HeadBucketRequestFactory(bucketName);
+		final BucketTrieFactory bucketTrieFactory = new BucketTrieFactory();
 		return new S3BucketRepositoryImpl(client, bucketName, filePutObjectRequestFactory, deleteObjectRequestFactory,
-				listObjectsRequestFactory, headBucketRequestFactory);
+				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
 
 }

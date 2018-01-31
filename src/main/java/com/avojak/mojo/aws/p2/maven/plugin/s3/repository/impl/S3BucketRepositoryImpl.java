@@ -11,7 +11,7 @@ import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.BucketDoesNotExistExcept
 import com.avojak.mojo.aws.p2.maven.plugin.s3.exception.ObjectRequestCreationException;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.BucketPath;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.Trie;
-import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl.BucketTrie;
+import com.avojak.mojo.aws.p2.maven.plugin.s3.model.trie.impl.BucketTrieFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepository;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.repository.S3BucketRepositoryFactory;
 import com.avojak.mojo.aws.p2.maven.plugin.s3.request.factory.delete.DeleteObjectRequestFactory;
@@ -44,6 +44,7 @@ public class S3BucketRepositoryImpl implements S3BucketRepository {
 	private final DeleteObjectRequestFactory deleteObjectRequestFactory;
 	private final ListObjectsRequestFactory listObjectsRequestFactory;
 	private final HeadBucketRequestFactory headBucketRequestFactory;
+	private final BucketTrieFactory bucketTrieFactory;
 
 	private String bucketRegion;
 
@@ -65,7 +66,8 @@ public class S3BucketRepositoryImpl implements S3BucketRepository {
 	                              final PutObjectRequestFactory putObjectRequestFactory,
 	                              final DeleteObjectRequestFactory deleteObjectRequestFactory,
 	                              final ListObjectsRequestFactory listObjectsRequestFactory,
-	                              final HeadBucketRequestFactory headBucketRequestFactory) throws BucketDoesNotExistException {
+	                              final HeadBucketRequestFactory headBucketRequestFactory,
+	                              final BucketTrieFactory bucketTrieFactory) throws BucketDoesNotExistException {
 		this.client = checkNotNull(client, "client cannot be null");
 		this.bucketName = checkNotNull(bucketName, "bucketName cannot be null");
 		checkArgument(!bucketName.trim().isEmpty(), "bucketName cannot be empty");
@@ -76,6 +78,7 @@ public class S3BucketRepositoryImpl implements S3BucketRepository {
 				checkNotNull(listObjectsRequestFactory, "listObjectsRequestFactory cannot be null");
 		this.headBucketRequestFactory =
 				checkNotNull(headBucketRequestFactory, "headBucketRequestFactory cannot be null");
+		this.bucketTrieFactory = checkNotNull(bucketTrieFactory, "bucketTrieFactory cannot be null");
 		if (!client.doesBucketExist(bucketName)) {
 			throw new BucketDoesNotExistException(bucketName);
 		}
@@ -106,7 +109,8 @@ public class S3BucketRepositoryImpl implements S3BucketRepository {
 		checkNotNull(dest, "dest cannot be null");
 		final String prefix = getPrefix(dest.asString());
 		LOGGER.debug(ResourceUtil.getString(getClass(), "debug.determinedTriePrefix"), prefix);
-		final Trie<String, String> content = prefix == null ? new BucketTrie() : new BucketTrie(prefix);
+		final Trie<String, String> content =
+				prefix == null ? bucketTrieFactory.create() : bucketTrieFactory.create(prefix);
 		uploadDirectory(srcDir, dest, content);
 		return content;
 	}
