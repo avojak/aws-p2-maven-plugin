@@ -1,7 +1,6 @@
 package com.avojak.mojo.aws.p2.maven.plugin.util.resource;
 
 import com.avojak.mojo.aws.p2.maven.plugin.AWSP2Mojo;
-import com.avojak.mojo.aws.p2.maven.plugin.util.resource.ResourceUtil;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -16,7 +15,7 @@ public class ResourceUtilTest {
 	 * {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testGetString_NullClass() {
+	public void testGetStringNullClass() {
 		ResourceUtil.getString(null, "key");
 	}
 
@@ -24,7 +23,7 @@ public class ResourceUtilTest {
 	 * Tests that {@link ResourceUtil#getString(Class, String)} throws an exception when the given key is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testGetString_NullKey() {
+	public void testGetStringNullKey() {
 		ResourceUtil.getString(getClass(), null);
 	}
 
@@ -32,7 +31,7 @@ public class ResourceUtilTest {
 	 * Tests that {@link ResourceUtil#getString(Class, String)} throws an exception when the given key is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testGetString_EmptyKey() {
+	public void testGetStringEmptyKey() {
 		ResourceUtil.getString(getClass(), " ");
 	}
 

@@ -49,7 +49,7 @@ public class LandingPageGeneratorTest {
 	 * Tests that the constructor throws an exception when the given {@link LandingPageFormatter} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullFormatter() {
+	public void testConstructorNullFormatter() {
 		new LandingPageGenerator(null, landingPageWriter);
 	}
 
@@ -57,7 +57,7 @@ public class LandingPageGeneratorTest {
 	 * Tests that the constructor throws an exception when the given {@link LandingPageWriter} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullWriter() {
+	public void testConstructorNullWriter() {
 		new LandingPageGenerator(landingPageFormatter, null);
 	}
 
@@ -68,7 +68,7 @@ public class LandingPageGeneratorTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testGenerate_NullBucketName() throws IOException {
+	public void testGenerateNullBucketName() throws IOException {
 		landingPageGenerator.generate(null, projectName, content, date);
 	}
 
@@ -79,7 +79,7 @@ public class LandingPageGeneratorTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testGenerate_EmptyBucketName() throws IOException {
+	public void testGenerateEmptyBucketName() throws IOException {
 		landingPageGenerator.generate(" ", projectName, content, date);
 	}
 
@@ -90,7 +90,7 @@ public class LandingPageGeneratorTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testGenerate_NullProjectName() throws IOException {
+	public void testGenerateNullProjectName() throws IOException {
 		landingPageGenerator.generate(bucketName, null, content, date);
 	}
 
@@ -101,7 +101,7 @@ public class LandingPageGeneratorTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testGenerate_EmptyProjectName() throws IOException {
+	public void testGenerateEmptyProjectName() throws IOException {
 		landingPageGenerator.generate(bucketName, " ", content, date);
 	}
 
@@ -112,7 +112,7 @@ public class LandingPageGeneratorTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testGenerate_NullContent() throws IOException {
+	public void testGenerateNullContent() throws IOException {
 		landingPageGenerator.generate(bucketName, projectName, null, date);
 	}
 
@@ -123,7 +123,7 @@ public class LandingPageGeneratorTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testGenerate_NullDate() throws IOException {
+	public void testGenerateNullDate() throws IOException {
 		landingPageGenerator.generate(bucketName, projectName, content, null);
 	}
 

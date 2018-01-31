@@ -32,7 +32,7 @@ public class BucketTrieFactoryTest {
 	 * Tests that {@link BucketTrieFactory#create(String)} throws an exception when the given prefix is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testCreate_WithPrefix_NullPrefix() {
+	public void testCreateWithNullPrefix() {
 		factory.create(null);
 	}
 
@@ -40,7 +40,7 @@ public class BucketTrieFactoryTest {
 	 * Tests that {@link BucketTrieFactory#create(String)} throws an exception when the given prefix is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testCreate_WithPrefix_EmptyPrefix() {
+	public void testCreateWithEmptyPrefix() {
 		factory.create(" ");
 	}
 
@@ -48,7 +48,7 @@ public class BucketTrieFactoryTest {
 	 * Tests {@link BucketTrieFactory#create(String)}.
 	 */
 	@Test
-	public void testCreate_WithPrefix() {
+	public void testCreateWithPrefix() {
 		assertNotNull(factory.create("prefix"));
 	}
 

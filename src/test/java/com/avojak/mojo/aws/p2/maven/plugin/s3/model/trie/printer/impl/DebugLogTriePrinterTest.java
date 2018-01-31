@@ -21,7 +21,7 @@ public class DebugLogTriePrinterTest {
 	 * Tests that the constructor throws an exception when the given {@link Logger} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullLogger() {
+	public void testConstructorNullLogger() {
 		new DebugLogTriePrinter(null);
 	}
 

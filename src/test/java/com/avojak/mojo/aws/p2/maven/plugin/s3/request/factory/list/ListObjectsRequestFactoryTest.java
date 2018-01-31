@@ -14,7 +14,7 @@ public class ListObjectsRequestFactoryTest {
 	 * Tests that the constructor throws an exception when the given bucket name is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullBucketName() {
+	public void testConstructorNullBucketName() {
 		new ListObjectsRequestFactory(null);
 	}
 
@@ -22,7 +22,7 @@ public class ListObjectsRequestFactoryTest {
 	 * Tests that the constructor throws an exception when the given bucket name is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testConstructor_EmptyBucketName() {
+	public void testConstructorEmptyBucketName() {
 		new ListObjectsRequestFactory(" ");
 	}
 

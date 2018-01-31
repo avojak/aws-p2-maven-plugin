@@ -55,7 +55,7 @@ public class HtmlLandingPageWriterTest {
 	 * Tests that the constructor throws an exception when the given {@link FileFactory} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullFileFactory() {
+	public void testConstructorNullFileFactory() {
 		new HtmlLandingPageWriter(null, fileWriterFactory);
 	}
 
@@ -63,7 +63,7 @@ public class HtmlLandingPageWriterTest {
 	 * Tests that the constructor throws an exception when the given {@link FileWriterFactory} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullFileWriterFactory() {
+	public void testConstructorNullFileWriterFactory() {
 		new HtmlLandingPageWriter(fileFactory, null);
 	}
 
@@ -74,7 +74,7 @@ public class HtmlLandingPageWriterTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testWrite_NullContent() throws IOException {
+	public void testWriteNullContent() throws IOException {
 		writer.write(null, filename);
 	}
 
@@ -85,7 +85,7 @@ public class HtmlLandingPageWriterTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testWrite_EmptyContent() throws IOException {
+	public void testWriteEmptyContent() throws IOException {
 		writer.write(" ", filename);
 	}
 
@@ -96,7 +96,7 @@ public class HtmlLandingPageWriterTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testWrite_NullFilename() throws IOException {
+	public void testWriteNullFilename() throws IOException {
 		writer.write(content, null);
 	}
 
@@ -107,7 +107,7 @@ public class HtmlLandingPageWriterTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testWrite_EmptyFilename() throws IOException {
+	public void testWriteEmptyFilename() throws IOException {
 		writer.write(content, " ");
 	}
 

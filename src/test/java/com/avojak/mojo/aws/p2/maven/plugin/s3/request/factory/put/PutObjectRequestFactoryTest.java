@@ -52,7 +52,7 @@ public class PutObjectRequestFactoryTest {
 	 * Tests that the constructor throws an exception when the given bucket name is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullBucketName() {
+	public void testConstructorNullBucketName() {
 		new PutObjectRequestFactory(null);
 	}
 
@@ -60,7 +60,7 @@ public class PutObjectRequestFactoryTest {
 	 * Tests that the constructor throws an exception when the given bucket name is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testConstructor_EmptyBucketName() {
+	public void testConstructorEmptyBucketName() {
 		new PutObjectRequestFactory(" ");
 	}
 
@@ -71,7 +71,7 @@ public class PutObjectRequestFactoryTest {
 	 * @throws ObjectRequestCreationException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testCreate_NullFile() throws ObjectRequestCreationException {
+	public void testCreateNullFile() throws ObjectRequestCreationException {
 		factory.create(null, destination);
 	}
 
@@ -83,7 +83,7 @@ public class PutObjectRequestFactoryTest {
 	 * @throws IOException                    Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testCreate_NullDestination() throws ObjectRequestCreationException, IOException {
+	public void testCreateNullDestination() throws ObjectRequestCreationException, IOException {
 		factory.create(createTemporaryFile(), null);
 	}
 
@@ -95,7 +95,7 @@ public class PutObjectRequestFactoryTest {
 	 * @throws IOException                    Unexpected.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testCreate_EmptyDestination() throws ObjectRequestCreationException, IOException {
+	public void testCreateEmptyDestination() throws ObjectRequestCreationException, IOException {
 		factory.create(createTemporaryFile(), " ");
 	}
 
@@ -106,7 +106,7 @@ public class PutObjectRequestFactoryTest {
 	 * @throws ObjectRequestCreationException Expected.
 	 */
 	@Test(expected = ObjectRequestCreationException.class)
-	public void testCreate_FileNotFound() throws ObjectRequestCreationException {
+	public void testCreateFileNotFound() throws ObjectRequestCreationException {
 		factory.create(new File(""), destination);
 	}
 
@@ -137,7 +137,7 @@ public class PutObjectRequestFactoryTest {
 	 * @throws IOException                    Unexpected.
 	 */
 	@Test
-	public void testCreate_HtmlContentType() throws ObjectRequestCreationException, IOException {
+	public void testCreateHtmlContentType() throws ObjectRequestCreationException, IOException {
 		final File file = createTemporaryFile(".html");
 		final PutObjectRequest request = factory.create(file, destination);
 

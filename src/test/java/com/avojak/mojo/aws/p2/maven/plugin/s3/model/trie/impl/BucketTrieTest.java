@@ -44,7 +44,7 @@ public class BucketTrieTest {
 	 * Tests that the constructor throws an exception when the given system {@link TriePrinter} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullSystemPrinter() {
+	public void testConstructorNullSystemPrinter() {
 		new BucketTrie(null, null, loggerPrinter);
 	}
 
@@ -52,7 +52,7 @@ public class BucketTrieTest {
 	 * Tests that the constructor throws an exception when the given logger {@link TriePrinter} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullLoggerPrinter() {
+	public void testConstructorNullLoggerPrinter() {
 		new BucketTrie(null, systemPrinter, null);
 	}
 
@@ -60,7 +60,7 @@ public class BucketTrieTest {
 	 * Tests that {@link BucketTrie#insert(String, String)} throws an exception when the given key is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testInsert_NullKey() {
+	public void testInsertNullKey() {
 		new BucketTrie(null, systemPrinter, loggerPrinter).insert(null, "");
 	}
 
@@ -68,7 +68,7 @@ public class BucketTrieTest {
 	 * Tests that {@link BucketTrie#insert(String, String)} throws an exception when the given key is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testInsert_EmptyKey() {
+	public void testInsertEmptyKey() {
 		new BucketTrie(null, systemPrinter, loggerPrinter).insert(" ", "");
 	}
 
@@ -76,7 +76,7 @@ public class BucketTrieTest {
 	 * Tests {@link BucketTrie#insert(String, String)} when the given key does not match the prefix.
 	 */
 	@Test
-	public void testInsert_KeyDoesNotMatchPrefix() {
+	public void testInsertKeyDoesNotMatchPrefix() {
 		final String prefix = "prefix";
 		final String key = "key";
 		final Trie<String, String> trie = new BucketTrie(prefix, systemPrinter, loggerPrinter);
@@ -90,7 +90,7 @@ public class BucketTrieTest {
 	 * Tests {@link BucketTrie#insert(String, String)} when the given key matches the prefix.
 	 */
 	@Test
-	public void testInsert_KeyMatchesPrefix() {
+	public void testInsertKeyMatchesPrefix() {
 		final String prefix = "prefix";
 		final String shortKey = "key";
 		final String longKey = prefix + "/" + shortKey;
@@ -109,7 +109,7 @@ public class BucketTrieTest {
 	 * Tests {@link BucketTrie#insert(String, String)} when there is no prefix.
 	 */
 	@Test
-	public void testInsert_NoPrefix() {
+	public void testInsertNoPrefix() {
 		final String key = "key";
 		final String value = "value";
 		final TrieNode<String> expected = new FileTrieNode(value);
@@ -126,7 +126,7 @@ public class BucketTrieTest {
 	 * Tests {@link BucketTrie#insert(String, String)} with a folder and a file.
 	 */
 	@Test
-	public void testInsert_FolderAndFile() {
+	public void testInsertFolderAndFile() {
 		final String filename = "file.tmp";
 		final String key = "folder/" + filename;
 		final String value = "http://www.example.com/file.tmp";
@@ -161,7 +161,7 @@ public class BucketTrieTest {
 	 * Tests {@link BucketTrie#getPrefix()} when there is no prefix.
 	 */
 	@Test
-	public void testGetPrefix_NullPrefix() {
+	public void testGetPrefixNullPrefix() {
 		assertEquals(Optional.absent(), new BucketTrie(null, systemPrinter, loggerPrinter).getPrefix());
 	}
 
@@ -189,7 +189,7 @@ public class BucketTrieTest {
 	 * Tests {@link BucketTrie#print()} when there is not content in the trie.
 	 */
 	@Test
-	public void testPrint_NoContent() {
+	public void testPrintNoContent() {
 		new BucketTrie(null, systemPrinter, loggerPrinter).print();
 		verify(systemPrinter, never()).print(anyString());
 	}
@@ -221,7 +221,7 @@ public class BucketTrieTest {
 	 * Tests {@link BucketTrie#log()} when there is not content in the trie.
 	 */
 	@Test
-	public void testLog_NoContent() {
+	public void testLogNoContent() {
 		new BucketTrie(null, systemPrinter, loggerPrinter).log();
 		verify(loggerPrinter, never()).print(anyString());
 	}

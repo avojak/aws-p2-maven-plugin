@@ -123,7 +123,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullClient() throws BucketDoesNotExistException {
+	public void testConstructorNullClient() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(null, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
 				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
@@ -134,7 +134,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullBucketName() throws BucketDoesNotExistException {
+	public void testConstructorNullBucketName() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, null, putObjectRequestFactory, deleteObjectRequestFactory,
 				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
@@ -145,7 +145,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testConstructor_EmptyBucketName() throws BucketDoesNotExistException {
+	public void testConstructorEmptyBucketName() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, " ", putObjectRequestFactory, deleteObjectRequestFactory,
 				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
@@ -156,7 +156,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullPutObjectRequestFactory() throws BucketDoesNotExistException {
+	public void testConstructorNullPutObjectRequestFactory() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, bucketName, null, deleteObjectRequestFactory,
 				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
@@ -167,7 +167,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullDeleteObjectRequestFactory() throws BucketDoesNotExistException {
+	public void testConstructorNullDeleteObjectRequestFactory() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, null,
 				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
 	}
@@ -178,7 +178,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullListObjectsRequestFactory() throws BucketDoesNotExistException {
+	public void testConstructorNullListObjectsRequestFactory() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory, null,
 				headBucketRequestFactory, bucketTrieFactory);
 	}
@@ -189,7 +189,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullHeadBucketRequestFactory() throws BucketDoesNotExistException {
+	public void testConstructorNullHeadBucketRequestFactory() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
 				listObjectsRequestFactory, null, bucketTrieFactory);
 	}
@@ -200,7 +200,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullBucketTrieFactory() throws BucketDoesNotExistException {
+	public void testConstructorNullBucketTrieFactory() throws BucketDoesNotExistException {
 		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
 				listObjectsRequestFactory, headBucketRequestFactory, null);
 	}
@@ -211,7 +211,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws BucketDoesNotExistException Expected.
 	 */
 	@Test(expected = BucketDoesNotExistException.class)
-	public void testConstructor_BucketDoesNotExist() throws BucketDoesNotExistException {
+	public void testConstructorBucketDoesNotExist() throws BucketDoesNotExistException {
 		when(client.doesBucketExist(bucketName)).thenReturn(false);
 		new S3BucketRepositoryImpl(client, bucketName, putObjectRequestFactory, deleteObjectRequestFactory,
 				listObjectsRequestFactory, headBucketRequestFactory, bucketTrieFactory);
@@ -222,7 +222,7 @@ public class S3BucketRepositoryImplTest {
 	 * File} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testUploadFile_NullFile() {
+	public void testUploadFileNullFile() {
 		repository.uploadFile(null, new BucketPath());
 	}
 
@@ -233,7 +233,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testUploadFile_NullDestination() throws IOException {
+	public void testUploadFileNullDestination() throws IOException {
 		repository.uploadFile(FileSystemTestUtil.createAccessibleFile(), null);
 	}
 
@@ -243,7 +243,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test
-	public void testUploadFile_FileNotAccessible() throws IOException {
+	public void testUploadFileFileNotAccessible() throws IOException {
 		final File file = FileSystemTestUtil.createInaccessibleFile();
 		final String key = repository.uploadFile(file, new BucketPath());
 
@@ -259,7 +259,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test
-	public void testUploadFile_FileNotAFile() throws IOException {
+	public void testUploadFileFileNotAFile() throws IOException {
 		final File file = FileSystemTestUtil.createAccessibleDirectory();
 		final String key = repository.uploadFile(file, new BucketPath());
 
@@ -276,7 +276,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws ObjectRequestCreationException Expected to be caught and handled.
 	 */
 	@Test
-	public void testUploadFile_UploadRequestCreationFailed() throws IOException, ObjectRequestCreationException {
+	public void testUploadFileUploadRequestCreationFailed() throws IOException, ObjectRequestCreationException {
 		final File file = FileSystemTestUtil.createAccessibleFile();
 		final BucketPath destination = new BucketPath().append("repository");
 		final Throwable throwable = new ObjectRequestCreationException();
@@ -301,7 +301,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws ObjectRequestCreationException Unexpected.
 	 */
 	@Test
-	public void testUploadFile_DeleteExistingFile() throws IOException, ObjectRequestCreationException {
+	public void testUploadFileDeleteExistingFile() throws IOException, ObjectRequestCreationException {
 		final File file = FileSystemTestUtil.createAccessibleFile();
 		final BucketPath destination = new BucketPath().append("repository");
 		when(putObjectRequestFactory.create(file, destination.asString())).thenReturn(putObjectRequest);
@@ -339,7 +339,7 @@ public class S3BucketRepositoryImplTest {
 	 * directory is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testUploadDirectory_NullDirectory() {
+	public void testUploadDirectoryNullDirectory() {
 		repository.uploadDirectory(null, new BucketPath());
 	}
 
@@ -350,7 +350,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testUploadDirectory_NullDestination() throws IOException {
+	public void testUploadDirectoryNullDestination() throws IOException {
 		repository.uploadDirectory(FileSystemTestUtil.createAccessibleDirectory(), null);
 	}
 
@@ -360,7 +360,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test
-	public void testUploadDirectory_DirectoryNotAccessible() throws IOException {
+	public void testUploadDirectoryDirectoryNotAccessible() throws IOException {
 		final File directory = FileSystemTestUtil.createInaccessibleDirectory();
 		final Trie<String, String> content = repository.uploadDirectory(directory, new BucketPath());
 
@@ -378,7 +378,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test
-	public void testUploadDirectory_DirectoryNotADirectory() throws IOException {
+	public void testUploadDirectoryDirectoryNotADirectory() throws IOException {
 		final File directory = FileSystemTestUtil.createAccessibleFile();
 		final Trie<String, String> content = repository.uploadDirectory(directory, new BucketPath());
 
@@ -396,7 +396,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test
-	public void testUploadDirectory_DeleteExistingDirectory() throws IOException {
+	public void testUploadDirectoryDeleteExistingDirectory() throws IOException {
 		final File directory = FileSystemTestUtil.createAccessibleDirectory();
 		final BucketPath destination = new BucketPath().append("repository");
 
@@ -417,7 +417,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test
-	public void testUploadDirectory_EmptyDirectory() throws IOException {
+	public void testUploadDirectoryEmptyDirectory() throws IOException {
 		final File directory = FileSystemTestUtil.createAccessibleDirectory();
 		final BucketPath destination = new BucketPath().append("repository");
 
@@ -439,7 +439,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test
-	public void testUploadDirectory_ChildDirectory() throws IOException {
+	public void testUploadDirectoryChildDirectory() throws IOException {
 		final File parentDirectory = FileSystemTestUtil.createAccessibleDirectory();
 		FileSystemTestUtil.createAccessibleDirectory(parentDirectory.toPath());
 		final BucketPath parentDirectoryDestination = new BucketPath().append("repository");
@@ -459,7 +459,7 @@ public class S3BucketRepositoryImplTest {
 	 * @throws ObjectRequestCreationException Unexpected.
 	 */
 	@Test
-	public void testUploadDirectory_ChildFile() throws IOException, ObjectRequestCreationException {
+	public void testUploadDirectoryChildFile() throws IOException, ObjectRequestCreationException {
 		final File directory = FileSystemTestUtil.createAccessibleDirectory();
 		final File file = FileSystemTestUtil.createAccessibleFile(directory.toPath());
 
@@ -488,7 +488,7 @@ public class S3BucketRepositoryImplTest {
 	 * {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testDeleteDirectory_NullPrefix() {
+	public void testDeleteDirectoryNullPrefix() {
 		repository.deleteDirectory(null);
 	}
 
@@ -497,7 +497,7 @@ public class S3BucketRepositoryImplTest {
 	 * empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testDeleteDirectory_EmptyPrefix() {
+	public void testDeleteDirectoryEmptyPrefix() {
 		repository.deleteDirectory(" ");
 	}
 
@@ -525,7 +525,7 @@ public class S3BucketRepositoryImplTest {
 	 * truncated.
 	 */
 	@Test
-	public void testDeleteDirectory_ResultsTruncated() {
+	public void testDeleteDirectoryResultsTruncated() {
 		final String prefix = "prefix";
 		when(listObjectsRequestFactory.create(prefix)).thenReturn(listObjectsRequest);
 
@@ -567,7 +567,7 @@ public class S3BucketRepositoryImplTest {
 	 * Tests {@link S3BucketRepositoryImpl#getHostingUrl(String)} when the given key is null.
 	 */
 	@Test
-	public void testGetHostingUrl_NullKey() {
+	public void testGetHostingUrlNullKey() {
 		when(headBucketRequestFactory.create()).thenReturn(headBucketRequest);
 		when(client.headBucket(headBucketRequest)).thenReturn(headBucketResult);
 		when(headBucketResult.getBucketRegion()).thenReturn(bucketLocation);

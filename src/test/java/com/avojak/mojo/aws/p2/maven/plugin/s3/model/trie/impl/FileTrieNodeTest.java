@@ -18,7 +18,7 @@ public class FileTrieNodeTest {
 	 * Tests that the constructor throws an exception when the given value is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullValue() {
+	public void testConstructorNullValue() {
 		new FileTrieNode(null);
 	}
 
@@ -26,7 +26,7 @@ public class FileTrieNodeTest {
 	 * Tests that the constructor throws an exception when the given value is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testConstructor_EmptyValue() {
+	public void testConstructorEmptyValue() {
 		new FileTrieNode(" ");
 	}
 

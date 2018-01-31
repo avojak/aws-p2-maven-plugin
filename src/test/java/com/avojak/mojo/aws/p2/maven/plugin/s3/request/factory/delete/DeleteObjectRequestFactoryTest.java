@@ -28,7 +28,7 @@ public class DeleteObjectRequestFactoryTest {
 	 * Tests that the constructor throws an exception when the given bucket name is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullBucketName() {
+	public void testConstructorNullBucketName() {
 		new DeleteObjectRequestFactory(null);
 	}
 
@@ -36,7 +36,7 @@ public class DeleteObjectRequestFactoryTest {
 	 * Tests that the constructor throws an exception when the given bucket name is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testConstructor_EmptyBucketName() {
+	public void testConstructorEmptyBucketName() {
 		new DeleteObjectRequestFactory(" ");
 	}
 
@@ -45,7 +45,7 @@ public class DeleteObjectRequestFactoryTest {
 	 * null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testCreate_NullKey() {
+	public void testCreateNullKey() {
 		factory.create(null);
 	}
 
@@ -53,7 +53,7 @@ public class DeleteObjectRequestFactoryTest {
 	 * Tests that {@link DeleteObjectRequestFactory#create(String)} throws an exception when the given key is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testCreate_EmptyKey() {
+	public void testCreateEmptyKey() {
 		factory.create(" ");
 	}
 

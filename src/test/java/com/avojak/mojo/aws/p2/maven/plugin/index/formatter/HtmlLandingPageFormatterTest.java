@@ -54,7 +54,7 @@ public class HtmlLandingPageFormatterTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testConstructor_NullEscaper() throws IOException {
+	public void testConstructorNullEscaper() throws IOException {
 		new HtmlLandingPageFormatter(null);
 	}
 
@@ -63,7 +63,7 @@ public class HtmlLandingPageFormatterTest {
 	 * bucket name is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testFormat_NullBucketName() {
+	public void testForma_NullBucketName() {
 		htmlLandingPageFormatter.format(null, projectName, content, date);
 	}
 
@@ -72,7 +72,7 @@ public class HtmlLandingPageFormatterTest {
 	 * bucket name is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testFormat_EmptyBucketName() {
+	public void testFormatEmptyBucketName() {
 		htmlLandingPageFormatter.format(" ", projectName, content, date);
 	}
 
@@ -81,7 +81,7 @@ public class HtmlLandingPageFormatterTest {
 	 * project name is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testFormat_NullProjectName() {
+	public void testFormatNullProjectName() {
 		htmlLandingPageFormatter.format(bucketName, null, content, date);
 	}
 
@@ -90,7 +90,7 @@ public class HtmlLandingPageFormatterTest {
 	 * project name is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testFormat_EmptyProjectName() {
+	public void testFormatEmptyProjectName() {
 		htmlLandingPageFormatter.format(bucketName, " ", content, date);
 	}
 
@@ -99,7 +99,7 @@ public class HtmlLandingPageFormatterTest {
 	 * {@link Trie} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testFormat_NullContent() {
+	public void testFormatNullContent() {
 		htmlLandingPageFormatter.format(bucketName, projectName, null, date);
 	}
 
@@ -108,7 +108,7 @@ public class HtmlLandingPageFormatterTest {
 	 * {@link Date} is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testFormat_NullDate() {
+	public void testFormatNullDate() {
 		htmlLandingPageFormatter.format(bucketName, projectName, content, null);
 	}
 
@@ -118,7 +118,7 @@ public class HtmlLandingPageFormatterTest {
 	 * @throws IOException Unexpected.
 	 */
 	@Test
-	public void testFormat_NoRepositoryContent() throws IOException {
+	public void testFormatNoRepositoryContent() throws IOException {
 		final String expected = getExpectedLandingPage("LandingPage_NoRepositoryContent.html");
 		final String actual = htmlLandingPageFormatter.format(bucketName, projectName, content, date);
 		assertEquals(expected, actual);

@@ -124,7 +124,7 @@ public class AWSP2MojoTest {
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test
-	public void testExecute_SkipExecution() throws MojoFailureException, BucketDoesNotExistException {
+	public void testExecuteSkipExecution() throws MojoFailureException, BucketDoesNotExistException {
 		mojo.setSkip(true);
 		mojo.execute();
 
@@ -140,7 +140,7 @@ public class AWSP2MojoTest {
 	 * @throws BucketDoesNotExistException Unexpected.
 	 */
 	@Test
-	public void testExecute_SkipSnapshot() throws MojoFailureException, BucketDoesNotExistException {
+	public void testExecuteSkipSnapshot() throws MojoFailureException, BucketDoesNotExistException {
 		mojo.setDeploySnapshots(false);
 		mojo.execute();
 
@@ -154,7 +154,7 @@ public class AWSP2MojoTest {
 	 * @throws BucketDoesNotExistException Expected to be caught and wrapped by {@link MojoFailureException}.
 	 */
 	@Test
-	public void testExecute_BucketDoesNotExist() throws BucketDoesNotExistException {
+	public void testExecuteBucketDoesNotExist() throws BucketDoesNotExistException {
 		when(repositoryFactory.create(bucketName)).thenThrow(BucketDoesNotExistException.class);
 
 		try {
@@ -173,7 +173,7 @@ public class AWSP2MojoTest {
 	 * @throws MalformedURLException Unexpected.
 	 */
 	@Test
-	public void testExecute_NotUsingDedicatedBucket_SnapshotDeployment()
+	public void testExecuteNotUsingDedicatedBucketSnapshotDeployment()
 			throws MojoFailureException, MalformedURLException {
 		when(project.getVersion()).thenReturn(SNAPSHOT_VERSION);
 		mojo.setDedicatedBuckets(false);
@@ -198,7 +198,7 @@ public class AWSP2MojoTest {
 	 * @throws MalformedURLException Unexpected.
 	 */
 	@Test
-	public void testExecute_NotUsingDedicatedBucket_ReleaseDeployment()
+	public void testExecuteNotUsingDedicatedBucketReleaseDeployment()
 			throws MojoFailureException, MalformedURLException {
 		when(project.getVersion()).thenReturn(RELEASE_VERSION);
 		mojo.setDedicatedBuckets(false);
@@ -222,7 +222,7 @@ public class AWSP2MojoTest {
 	 * @throws MalformedURLException Unexpected.
 	 */
 	@Test
-	public void testExecute_DedicatedBucket() throws MojoFailureException, MalformedURLException {
+	public void testExecuteDedicatedBucket() throws MojoFailureException, MalformedURLException {
 		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
 		final BucketPath expectedDestination = new BucketPath().append(targetSiteDirectory);
 		final URL expectedUrl = new URL("http", "example.com", "mock");
@@ -244,7 +244,7 @@ public class AWSP2MojoTest {
 	 * @throws IOException          Unexpected.
 	 */
 	@Test
-	public void testExecute_DoNotGenerateLandingPage() throws MojoFailureException, IOException {
+	public void testExecuteDoNotGenerateLandingPage() throws MojoFailureException, IOException {
 		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
 		final BucketPath expectedDestination = new BucketPath().append(targetSiteDirectory);
 		final URL expectedUrl = new URL("http", "example.com", "mock");
@@ -266,7 +266,7 @@ public class AWSP2MojoTest {
 	 * @throws IOException          Unexpected.
 	 */
 	@Test
-	public void testExecute_GenerateLandingPage() throws MojoFailureException, IOException {
+	public void testExecuteGenerateLandingPage() throws MojoFailureException, IOException {
 		mojo.setGenerateLandingPage(true);
 		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
 		final BucketPath expectedDestination = new BucketPath().append(targetSiteDirectory);
@@ -291,7 +291,7 @@ public class AWSP2MojoTest {
 	 * @throws IOException          Unexpected.
 	 */
 	@Test(expected = MojoFailureException.class)
-	public void testExecute_FailedToGenerateLandingPage() throws MojoFailureException, IOException {
+	public void testExecuteFailedToGenerateLandingPage() throws MojoFailureException, IOException {
 		mojo.setGenerateLandingPage(true);
 		final File expectedRepositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
 		final BucketPath expectedDestination = new BucketPath().append(targetSiteDirectory);

@@ -40,7 +40,7 @@ public class BucketPathTest {
 	 * Tests that {@link BucketPath#append(String)} throws an exception when the given path is {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testAppend_NullPath() {
+	public void testAppendNullPath() {
 		new BucketPath().append(null);
 	}
 
@@ -48,7 +48,7 @@ public class BucketPathTest {
 	 * Tests that {@link BucketPath#append(String)} throws an exception when the given path is empty.
 	 */
 	@Test(expected = IllegalArgumentException.class)
-	public void testAppend_EmptyPath() {
+	public void testAppendEmptyPath() {
 		new BucketPath().append(" ");
 	}
 
@@ -56,7 +56,7 @@ public class BucketPathTest {
 	 * Tests that {@link BucketPath#append(String)} replaces '\' with '/'.
 	 */
 	@Test
-	public void testAppend_ReplaceDeliminators() {
+	public void testAppendReplaceDeliminators() {
 		final String path = "directory\\file";
 		final String expectedPath = "directory/file";
 		assertEquals(expectedPath, new BucketPath().append(path).asString());
@@ -66,7 +66,7 @@ public class BucketPathTest {
 	 * Tests that {@link BucketPath#append(String)} trims deliminators at the start and end of the path.
 	 */
 	@Test
-	public void testAppend_TrimPrefixAndSuffix() {
+	public void testAppendTrimPrefixAndSuffix() {
 		final String path = "\\directory\\file\\";
 		final String expectedPath = "directory/file";
 		assertEquals(expectedPath, new BucketPath().append(path).asString());
@@ -76,7 +76,7 @@ public class BucketPathTest {
 	 * Tests that {@link BucketPath#append(String)} adds a deliminator when one doesn't already exist.
 	 */
 	@Test
-	public void test_AddDeliminator() {
+	public void testAddDeliminator() {
 		final String directory = "directory";
 		final String file = "file";
 		final String expectedPath = "directory/file";

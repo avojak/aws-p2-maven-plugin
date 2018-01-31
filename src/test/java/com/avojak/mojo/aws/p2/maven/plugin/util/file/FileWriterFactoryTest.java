@@ -19,7 +19,7 @@ public class FileWriterFactoryTest {
 	 * {@code null}.
 	 */
 	@Test(expected = NullPointerException.class)
-	public void testCreate_NullFile() {
+	public void testCreateNullFile() {
 		try {
 			new FileWriterFactory().create(null);
 		} catch (IOException e) {
