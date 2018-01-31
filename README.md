@@ -72,6 +72,8 @@ Alternatively, you may use snapshot versions from the snapshot repository:
 </pluginRepository>
 ```
 
+The plugin will run automatically during the `deploy` phase.
+
 ### Goals
 
 The following goals are available:
@@ -108,6 +110,8 @@ In order to host a static p2 update site on an S3 bucket, you will need to ensur
 2. In the bucket permissions tab, "Public access" to list bucket contents must be enabled
 
 It is up to the consumer to configure the AWS account used for deployments, although we recommend creating an account whose sole responsibility is deploying to this bucket. Only the minimum required permissions should be granted to this user.
+
+If versioning is enabled on the bucket, not all versions are deleted during an overwrite. When a new site is uploaded, only current content is deleted, and delete markers are not touched.
 
 ## Built With
 
