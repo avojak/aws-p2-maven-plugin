@@ -82,7 +82,7 @@ Additionally you may add a `pluginGroup` entry to the Maven settings file (User:
 </pluginGroups>
 ```
 
-For example, `$ mvn aws-p2:deploy`.
+For example, `$ mvn aws-p2:deploy -Daws-p2.bucket=p2.example.com`.
 
 ### Goals
 
