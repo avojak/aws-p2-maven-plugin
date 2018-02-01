@@ -54,7 +54,7 @@ public interface S3BucketRepository {
 	 * @param srcDir The source directory {@link File} to upload. Cannot be {@code null}.
 	 * @param dest   The destination {@link BucketPath} location within the bucket. Cannot be {@code null}.
 	 *
-	 * @return A non-{@link null}, possibly empty {@link Trie} of the directory which was uploaded.
+	 * @return A non-{@code null}, possibly empty {@link Trie} of the directory which was uploaded.
 	 */
 	Trie<String, String> uploadDirectory(final File srcDir, final BucketPath dest);
 
@@ -80,6 +80,8 @@ public interface S3BucketRepository {
 	/**
 	 * Gets the AWS static website hosting URL for the object with the given key. If no key is provided, the URL
 	 * returned will point to the root of the bucket.
+	 *
+	 * @param key The key for the object to retrieve.
 	 *
 	 * @return The static website hosting URL for the given object key, or the root of the bucket if no key is provided.
 	 */

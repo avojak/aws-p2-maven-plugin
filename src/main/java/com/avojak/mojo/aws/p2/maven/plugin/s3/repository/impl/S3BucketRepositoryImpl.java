@@ -59,6 +59,7 @@ public class S3BucketRepositoryImpl implements S3BucketRepository {
 	 * @param deleteObjectRequestFactory The {@link DeleteObjectRequestFactory}. Cannot be {@code null}.
 	 * @param listObjectsRequestFactory  The {@link ListObjectsRequestFactory}. Cannot be {@code null}.
 	 * @param headBucketRequestFactory   The {@link HeadBucketRequestFactory}. Cannot be {@code null}.
+	 * @param bucketTrieFactory          The {@link BucketTrieFactory}. Cannot be {@code null}.
 	 *
 	 * @throws BucketDoesNotExistException if the specified bucketName does not refer to an existing bucket.
 	 */
