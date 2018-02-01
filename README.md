@@ -48,34 +48,10 @@ Add the plugin to the `build` section of the `pom.xml`:
     </executions>
 </plugin>
 ```
-```xml
-<pluginRepository>
-    <id>avojak-release</id>
-    <name>avojak Release Repository</name>
-    <url>http://repo.avojak.com/maven-release</url>
-    <layout>default</layout>
-    <snapshots>
-        <enabled>false</enabled>
-    </snapshots>
-</pluginRepository>
-```
-
-Alternatively, you may use snapshot versions from the snapshot repository:
-```xml
-<pluginRepository>
-    <id>avojak-snapshot</id>
-    <name>avojak Snapshot Repository</name>
-    <url>http://repo.avojak.com/maven-snapshot</url>
-    <layout>default</layout>
-    <snapshots>
-        <enabled>true</enabled>
-    </snapshots>
-</pluginRepository>
-```
 
 The plugin will run automatically during the `deploy` phase.
 
-Additionally you may add a `pluginGroup` entry to the Maven settings file (User: `${user.home}/.m2/settings.xml`, Global: `${maven.home}/conf/settings.xml`), which will allow the use of `aws-p2:*` command line goals interactively in all projects:
+Additionally, you may add a `pluginGroup` entry to the Maven settings file (User: `${user.home}/.m2/settings.xml`, Global: `${maven.home}/conf/settings.xml`), which will allow the use of `aws-p2:*` command line goals interactively in all projects:
 ```xml
 <pluginGroups>
     <pluginGroup>com.avojak.mojo</pluginGroup>
