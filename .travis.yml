@@ -3,3 +3,6 @@ jdk:
   - oraclejdk8
 sudo: false
 script: mvn clean verify coveralls:report
+after_success:
+- wget https://raw.githubusercontent.com/avojak/settings.xml/master/settings.xml -O /tmp/settings.xml
+- mvn deploy --settings /tmp/settings.xml
