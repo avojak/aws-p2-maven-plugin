@@ -24,7 +24,7 @@ Maven 3.1.0+
 To build the plugin locally, simply run the following:
 
 ```
-mvn clean install
+$ mvn clean install
 ```
 
 ## Usage
@@ -74,6 +74,15 @@ Alternatively, you may use snapshot versions from the snapshot repository:
 ```
 
 The plugin will run automatically during the `deploy` phase.
+
+Additionally you may add a `pluginGroup` entry to the Maven settings file (User: `${user.home}/.m2/settings.xml`, Global: `${maven.home}/conf/settings.xml`), which will allow the use of `aws-p2:*` command line goals interactively in all projects:
+```xml
+<pluginGroups>
+    <pluginGroup>com.avojak.mojo</pluginGroup>
+</pluginGroups>
+```
+
+For example, `$ mvn aws-p2:deploy`.
 
 ### Goals
 
