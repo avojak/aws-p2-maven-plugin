@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/avojak/aws-p2-maven-plugin.svg?branch=master)](https://travis-ci.org/avojak/aws-p2-maven-plugin) 
 [![Coverage Status](https://coveralls.io/repos/github/avojak/aws-p2-maven-plugin/badge.svg?branch=master)](https://coveralls.io/github/avojak/aws-p2-maven-plugin?branch=master) 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/223a3bc2eac54dca90a3f96c8b853cf4)](https://www.codacy.com/app/avojak/aws-p2-maven-plugin?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=avojak/aws-p2-maven-plugin&amp;utm_campaign=Badge_Grade) 
-[![Dependency Status](https://beta.gemnasium.com/badges/github.com/avojak/aws-p2-maven-plugin.svg)](https://beta.gemnasium.com/projects/github.com/avojak/aws-p2-maven-plugin) 
+[![Known Vulnerabilities](https://snyk.io/test/github/avojak/aws-p2-maven-plugin/badge.svg)](https://snyk.io/test/github/avojak/aws-p2-maven-plugin)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 ![Version](https://img.shields.io/badge/version-1.0--SNAPSHOT-yellow.svg)
 
