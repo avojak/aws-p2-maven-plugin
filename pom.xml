@@ -6,7 +6,7 @@
     <artifactId>aws-p2-maven-plugin</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
-    
+
     <name>AWS p2 Maven Plugin</name>
     <description>Maven plugin for deploying a p2 update site to an AWS S3 bucket</description>
     <url>https://github.com/avojak/aws-p2-maven-plugin</url>
