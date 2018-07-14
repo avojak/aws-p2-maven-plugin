@@ -5,7 +5,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/223a3bc2eac54dca90a3f96c8b853cf4)](https://www.codacy.com/app/avojak/aws-p2-maven-plugin?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=avojak/aws-p2-maven-plugin&amp;utm_campaign=Badge_Grade) 
 [![Known Vulnerabilities](https://snyk.io/test/github/avojak/aws-p2-maven-plugin/badge.svg)](https://snyk.io/test/github/avojak/aws-p2-maven-plugin)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-![Version](https://img.shields.io/badge/version-1.0--SNAPSHOT-yellow.svg)
+![Version](https://img.shields.io/badge/version-1.0-blue.svg)
 
 A Maven plugin for deploying a [p2](https://www.eclipse.org/equinox/p2/) update site to an [AWS S3](https://aws.amazon.com/s3/) bucket.
 
@@ -35,7 +35,7 @@ Add the plugin to the `build` section of the `pom.xml`:
 <plugin>
     <groupId>com.avojak.mojo</groupId>
     <artifactId>aws-p2-maven-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <configuration>
         <bucket>p2.example.com</bucket>
     </configuration>
