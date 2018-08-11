@@ -112,6 +112,10 @@ If versioning is enabled on the bucket, not all versions are deleted during an o
 
 We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/avojak/aws-p2-maven-plugin/tags). 
 
+## More Information
+
+For more information on the development, check out [my blog post](https://blog.avojak.com/2018/08/10/aws-p2-maven-plugin/).
+
 ## License
 
 This project is licensed under the Apache License, Version 2.0 - see the [LICENSE](LICENSE) file for details
