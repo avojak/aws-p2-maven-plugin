@@ -32,8 +32,8 @@ public class AWSP2Mojo extends AbstractMojo {
 
 	private static final String REPOSITORY_DIR = "repository";
 	private static final String SNAPSHOT_QUALIFIER = "-SNAPSHOT";
-	private static final String SNAPSHOT_DIR = "snapshot";
-	private static final String RELEASE_DIR = "release";
+	private static final String SNAPSHOT_DIR = "snapshots";
+	private static final String RELEASE_DIR = "releases";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(AWSP2Mojo.class);
 
@@ -49,15 +49,6 @@ public class AWSP2Mojo extends AbstractMojo {
 	private String bucket;
 
 	/**
-	 * The directory within the bucket where the site will be placed. The default location is:
-	 * <pre>
-	 *     ${project.artifactId}/${project.version}
-	 * </pre>
-	 */
-	@Parameter(name = "targetSiteDirectory", property = "aws-p2.targetSiteDirectory", defaultValue = "${project.artifactId}/${project.version}")
-	private String targetSiteDirectory;
-
-	/**
 	 * Whether or not to deploy snapshot sites. The default value is {@code true}.
 	 */
 	@Parameter(name = "deploySnapshots", property = "aws-p2.deploySnapshots", defaultValue = "true")
@@ -70,28 +61,21 @@ public class AWSP2Mojo extends AbstractMojo {
 	private boolean skip;
 
 	/**
-	 * Whether or not dedicated buckets are used for snapshot and release sites. If {@code false}, the site will be
-	 * placed in either a snapshot or release directory in the bucket. For example, if {@code false}, a snapshot site
-	 * will be placed in:
-	 * <pre>
-	 *     snapshot/targetSiteDirectory
-	 * </pre>
-	 * And a release version site will be placed in:
-	 * <pre>
-	 *     release/targetSiteDirectory
-	 * </pre>
-	 * Consumers may instead choose host separate buckets for release and snapshot sites. The default value is {@code
-	 * false}.
+	 * Whether or not to write a web-accessible landing page for the update site. If {@code true}, the HTML landing page
+	 * will be created and uploaded into the root of the update site.
 	 */
-	@Parameter(name = "dedicatedBuckets", property = "aws-p2.dedicatedBuckets", defaultValue = "false")
-	private boolean dedicatedBuckets;
+	@Parameter(name = "generateLandingPage", property = "aws-p2.generateLandingPage", defaultValue = "false")
+	private boolean generateLandingPage;
 
 	/**
-	 * Whether or not to write a web-accessible landing page for the update site. If {@code true}, the HTML landing
-	 * page will be created and uploaded into the root of the update site.
+	 * The project name, which will be the top level directory where the repository will be placed. The default location
+	 * is:
+	 * <pre>
+	 *     ${project.name}
+	 * </pre>
 	 */
-	@Parameter(name = "generateLandingPage", property = "aws-p2.generateLandingPage", defaultValue = "true")
-	private boolean generateLandingPage;
+	@Parameter(name = "projectName", property = "aws-p2.projectName", defaultValue = "${project.name}")
+	private String projectName;
 
 	/**
 	 * The top level output directory of the build. The default value is:
@@ -127,10 +111,13 @@ public class AWSP2Mojo extends AbstractMojo {
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
 	 *
-	 * @param repositoryFactory           The {@link S3BucketRepositoryFactory}.
-	 * @param landingPageGeneratorFactory The {@link LandingPageGeneratorFactory}.
+	 * @param repositoryFactory
+	 * 		The {@link S3BucketRepositoryFactory}.
+	 * @param landingPageGeneratorFactory
+	 * 		The {@link LandingPageGeneratorFactory}.
 	 */
-	AWSP2Mojo(final S3BucketRepositoryFactory repositoryFactory, final LandingPageGeneratorFactory landingPageGeneratorFactory) {
+	AWSP2Mojo(final S3BucketRepositoryFactory repositoryFactory,
+			  final LandingPageGeneratorFactory landingPageGeneratorFactory) {
 		this.repositoryFactory = repositoryFactory;
 		this.landingPageGeneratorFactory = landingPageGeneratorFactory;
 	}
@@ -160,16 +147,12 @@ public class AWSP2Mojo extends AbstractMojo {
 		final File repositoryDirectory = new File(outputDirectory, REPOSITORY_DIR);
 		final BucketPath destination = new BucketPath();
 
-		// If not using dedicated buckets, then specify release/snapshot in the path
-		if (!dedicatedBuckets) {
-			if (isSnapshotVersion) {
-				destination.append(SNAPSHOT_DIR);
-			} else {
-				destination.append(RELEASE_DIR);
-			}
+		if (projectName == null || projectName.trim().isEmpty()) {
+			throw new MojoFailureException("Project name has not been specified");
 		}
-
-		destination.append(targetSiteDirectory);
+		destination.append(projectName)
+				.append(isSnapshotVersion ? SNAPSHOT_DIR : RELEASE_DIR)
+				.append(project.getVersion());
 
 		repository.deleteDirectory(destination.asString());
 		final Trie<String, String> content = repository.uploadDirectory(repositoryDirectory, destination);
@@ -204,8 +187,10 @@ public class AWSP2Mojo extends AbstractMojo {
 	 * Sets the Maven project.
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
+	 * </p>
 	 *
-	 * @param project The {@link MavenProject}.
+	 * @param project
+	 * 		The {@link MavenProject}.
 	 */
 	protected void setProject(final MavenProject project) {
 		this.project = project;
@@ -215,30 +200,23 @@ public class AWSP2Mojo extends AbstractMojo {
 	 * Sets the bucket name.
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
+	 * </p>
 	 *
-	 * @param bucket The bucket name.
+	 * @param bucket
+	 * 		The bucket name.
 	 */
 	protected void setBucket(final String bucket) {
 		this.bucket = bucket;
 	}
 
 	/**
-	 * Sets the target site directory.
-	 * <p>
-	 * <em>Package-private scoped for testing purposes.</em>
-	 *
-	 * @param targetSiteDirectory The target site directory.
-	 */
-	protected void setTargetSiteDirectory(final String targetSiteDirectory) {
-		this.targetSiteDirectory = targetSiteDirectory;
-	}
-
-	/**
 	 * Sets the deploy snapshots flag.
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
+	 * </p>
 	 *
-	 * @param deploySnapshots The deploy snapshots flag.
+	 * @param deploySnapshots
+	 * 		The deploy snapshots flag.
 	 */
 	protected void setDeploySnapshots(final boolean deploySnapshots) {
 		this.deploySnapshots = deploySnapshots;
@@ -248,30 +226,36 @@ public class AWSP2Mojo extends AbstractMojo {
 	 * Sets the skip execution flag.
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
+	 * </p>
 	 *
-	 * @param skip The skip execution flag.
+	 * @param skip
+	 * 		The skip execution flag.
 	 */
 	protected void setSkip(final boolean skip) {
 		this.skip = skip;
 	}
 
 	/**
-	 * Sets the dedicated buckets flag.
+	 * Sets the project name.
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
+	 * </p>
 	 *
-	 * @param dedicatedBuckets The dedicated buckets flag.
+	 * @param projectName
+	 * 		The project name.
 	 */
-	protected void setDedicatedBuckets(final boolean dedicatedBuckets) {
-		this.dedicatedBuckets = dedicatedBuckets;
+	protected void setProjectName(final String projectName) {
+		this.projectName = projectName;
 	}
 
 	/**
 	 * Sets the write landing page flag.
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
+	 * </p>
 	 *
-	 * @param generateLandingPage The write landing page flag.
+	 * @param generateLandingPage
+	 * 		The write landing page flag.
 	 */
 	protected void setGenerateLandingPage(final boolean generateLandingPage) {
 		this.generateLandingPage = generateLandingPage;
@@ -281,8 +265,10 @@ public class AWSP2Mojo extends AbstractMojo {
 	 * Sets the output directory.
 	 * <p>
 	 * <em>Package-private scoped for testing purposes.</em>
+	 * </p>
 	 *
-	 * @param outputDirectory The output directory {@link File}.
+	 * @param outputDirectory
+	 * 		The output directory {@link File}.
 	 */
 	protected void setOutputDirectory(final File outputDirectory) {
 		this.outputDirectory = outputDirectory;
