@@ -35,7 +35,7 @@
 
     <properties>
         <!-- Dependency versions -->
-        <aws.sdk.version>1.11.887</aws.sdk.version>
+        <aws.sdk.version>1.12.261</aws.sdk.version>
         <maven.version>3.5.2</maven.version>
         <slf4j.version>1.7.25</slf4j.version>
         <jackson.version>2.11.3</jackson.version>
